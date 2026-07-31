@@ -2,6 +2,7 @@ package cl.ignaciodiaz.dados.partida
 
 import android.content.Context
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -13,19 +14,27 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
+import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -60,46 +69,71 @@ fun PartidaScreen(
         return
     }
 
+    // El panel de fin de partida se puede cerrar para revisar la tabla y reabrir
+    // (decisión 42). "panelCerrado" es presentación pura, no una regla del juego: el
+    // motor sigue siendo el único que decide partidaTerminada. Se reabre solo cuando
+    // termina una partida nueva (la transición false -> true), no en cada recomposición.
+    var panelCerrado by remember { mutableStateOf(false) }
+    LaunchedEffect(uiState.partidaTerminada) {
+        if (uiState.partidaTerminada) panelCerrado = false
+    }
+
     val jugador = uiState.estado.jugadorEnTurno
     val dadosAMostrar: List<DadoModelo?> = uiState.estado.tiradaActual?.dados
         ?: List(Tirada.CANTIDAD_DE_DADOS) { null }
 
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text(
-            text = "Lanzamientos: ${uiState.estado.tiradaActual?.lanzamientos ?: 0} / ${Tirada.MAXIMO_DE_LANZAMIENTOS}",
-            style = MaterialTheme.typography.bodyMedium
-        )
-        Spacer(modifier = Modifier.height(8.dp))
+    Box(modifier = modifier.fillMaxSize()) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                text = "Lanzamientos: ${uiState.estado.tiradaActual?.lanzamientos ?: 0} / ${Tirada.MAXIMO_DE_LANZAMIENTOS}",
+                style = MaterialTheme.typography.bodyMedium
+            )
+            Spacer(modifier = Modifier.height(8.dp))
 
-        FilaDados(
-            dados = dadosAMostrar,
-            accionesLegales = uiState.accionesLegales,
-            onTocarDado = { indice -> viewModel.despachar(Accion.AlternarRetencion(indice)) }
-        )
-        Spacer(modifier = Modifier.height(16.dp))
+            FilaDados(
+                dados = dadosAMostrar,
+                accionesLegales = uiState.accionesLegales,
+                onTocarDado = { indice -> viewModel.despachar(Accion.AlternarRetencion(indice)) }
+            )
+            Spacer(modifier = Modifier.height(16.dp))
 
-        BotonLanzar(
-            habilitado = Accion.Lanzar in uiState.accionesLegales,
-            onClick = { viewModel.despachar(Accion.Lanzar) }
-        )
-        Spacer(modifier = Modifier.height(16.dp))
+            BotonLanzar(
+                habilitado = Accion.Lanzar in uiState.accionesLegales,
+                onClick = { viewModel.despachar(Accion.Lanzar) }
+            )
+            Spacer(modifier = Modifier.height(16.dp))
 
-        TablaCategorias(
-            categorias = viewModel.categorias,
-            jugador = jugador,
-            accionesLegales = uiState.accionesLegales,
-            previsualizaciones = uiState.previsualizaciones,
-            onAnotar = { categoriaId -> viewModel.despachar(Accion.Anotar(categoriaId)) }
-        )
-        Spacer(modifier = Modifier.height(16.dp))
+            TablaCategorias(
+                categorias = viewModel.categorias,
+                jugador = jugador,
+                accionesLegales = uiState.accionesLegales,
+                previsualizaciones = uiState.previsualizaciones,
+                onAnotar = { categoriaId -> viewModel.despachar(Accion.Anotar(categoriaId)) }
+            )
+            Spacer(modifier = Modifier.height(16.dp))
 
-        ResumenPuntaje(puntaje = uiState.puntaje)
+            ResumenPuntaje(puntaje = uiState.puntaje)
+
+            if (uiState.partidaTerminada && panelCerrado) {
+                TextButton(onClick = { panelCerrado = false }) {
+                    Text("Ver resultado final")
+                }
+            }
+        }
+
+        if (uiState.partidaTerminada && !panelCerrado) {
+            PanelFinDePartida(
+                puntaje = uiState.puntaje,
+                onCerrar = { panelCerrado = true },
+                onPartidaNueva = { viewModel.iniciarPartidaNueva() }
+            )
+        }
     }
 }
 
@@ -249,9 +283,61 @@ private fun TablaCategorias(
 @Composable
 private fun ResumenPuntaje(puntaje: Puntaje, modifier: Modifier = Modifier) {
     Column(modifier = modifier.fillMaxWidth().padding(16.dp)) {
-        Text("Subtotal superior: ${puntaje.subtotalSuperior}")
+        // El umbral viaja en Puntaje (decisión 43): la pantalla nunca conoce el 63,
+        // solo lo muestra si el motor lo entrega.
+        val textoSubtotal = if (puntaje.umbralBonus != null) {
+            "Subtotal superior: ${puntaje.subtotalSuperior}/${puntaje.umbralBonus}"
+        } else {
+            "Subtotal superior: ${puntaje.subtotalSuperior}"
+        }
+        Text(textoSubtotal)
         Text(if (puntaje.bonus > 0) "Bonus: +${puntaje.bonus}" else "Bonus: no alcanzado")
         Text("Total: ${puntaje.total}", fontWeight = FontWeight.Bold)
+    }
+}
+
+// Panel sobre el tablero, no una pantalla aparte (decisión 42): el jugador acaba de
+// pasar doce turnos construyendo la tabla y quiere seguir viéndola. Quién decide que
+// la partida terminó es el motor (partidaTerminada en PartidaUiState); este panel solo
+// reacciona.
+@Composable
+private fun PanelFinDePartida(
+    puntaje: Puntaje,
+    onCerrar: () -> Unit,
+    onPartidaNueva: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Box(
+        modifier = modifier
+            .fillMaxSize()
+            .background(Color.Black.copy(alpha = 0.5f)),
+        contentAlignment = Alignment.Center
+    ) {
+        Card(modifier = Modifier.padding(24.dp)) {
+            Column(
+                modifier = Modifier.padding(24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text("Partida terminada", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Text("Subtotal superior: ${puntaje.subtotalSuperior}")
+                Text(if (puntaje.bonus > 0) "Bonus: +${puntaje.bonus}" else "Bonus: no alcanzado")
+                Text("Subtotal inferior: ${puntaje.subtotalInferior}")
+                Text(
+                    "Total: ${puntaje.total}",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Row {
+                    TextButton(onClick = onCerrar) { Text("Cerrar") }
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Button(onClick = onPartidaNueva) { Text("Partida nueva") }
+                }
+            }
+        }
     }
 }
 

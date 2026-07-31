@@ -310,11 +310,22 @@ class MotorPartidaTest {
         assertEquals(35, puntajeConBonus.bonus)
         assertEquals(0, puntajeConBonus.subtotalInferior)
         assertEquals(98, puntajeConBonus.total)
+        assertEquals(63, puntajeConBonus.umbralBonus)
 
         val puntajeSinBonus = motor.puntaje(jugadorSinBonus)
         assertEquals(62, puntajeSinBonus.subtotalSuperior)
         assertEquals(0, puntajeSinBonus.bonus)
         assertEquals(62, puntajeSinBonus.total)
+        assertEquals(63, puntajeSinBonus.umbralBonus)
+    }
+
+    @Test
+    fun `el umbral del bonus es nulo cuando el RuleSet no tiene bonus de seccion superior`() {
+        val motor = MotorPartida(ruleSetDePrueba(numeroDeCategorias = 3), Random(SEMILLA))
+
+        val puntaje = motor.puntaje(Jugador("Jugador 1"))
+
+        assertNull(puntaje.umbralBonus)
     }
 
     // --- categorias ---

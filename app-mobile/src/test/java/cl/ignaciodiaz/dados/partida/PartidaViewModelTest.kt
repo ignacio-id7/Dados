@@ -1,9 +1,12 @@
 package cl.ignaciodiaz.dados.partida
 
+import cl.ignaciodiaz.dados.core.modelo.Categoria
 import cl.ignaciodiaz.dados.core.modelo.CategoriaId
 import cl.ignaciodiaz.dados.core.modelo.Dado
 import cl.ignaciodiaz.dados.core.modelo.EstadoPartida
 import cl.ignaciodiaz.dados.core.modelo.Jugador
+import cl.ignaciodiaz.dados.core.modelo.RuleSet
+import cl.ignaciodiaz.dados.core.modelo.Seccion
 import cl.ignaciodiaz.dados.core.modelo.Tirada
 import cl.ignaciodiaz.dados.core.motor.Accion
 import cl.ignaciodiaz.dados.core.motor.MotorPartida
@@ -24,6 +27,15 @@ import org.junit.Test
 import kotlin.random.Random
 
 private const val SEMILLA = 7
+
+// RuleSet de una sola categoría: alcanza para probar fin de partida sin anotar las
+// 12 categorías del preset Clásico.
+private fun ruleSetDeUnaCategoria() = RuleSet(
+    categorias = listOf(
+        Categoria(id = CategoriaId("unica"), seccion = Seccion.SUPERIOR, esValida = { true }, puntaje = { 5 })
+    ),
+    bonusSeccionSuperior = null
+)
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class PartidaViewModelTest {
@@ -139,5 +151,56 @@ class PartidaViewModelTest {
         viewModel.despachar(Accion.AlternarRetencion(0))
 
         assertTrue(repositorio.estadosGuardados.isEmpty())
+    }
+
+    @Test
+    fun `con una partida terminada cargada desde el repositorio, el estado se restaura terminado`() {
+        val motor = MotorPartida(ruleSetDeUnaCategoria(), Random(SEMILLA))
+        val estadoTerminado = EstadoPartida(
+            jugadores = listOf(Jugador(nombre = "Jugador 1", anotaciones = mapOf(CategoriaId("unica") to 5))),
+            indiceTurno = 0,
+            tiradaActual = null
+        )
+        val repositorio = RepositorioPartidaFalso(estadoTerminado)
+
+        val viewModel = PartidaViewModel(repositorio, motor)
+
+        assertFalse(viewModel.uiState.value.cargando)
+        assertTrue(viewModel.uiState.value.partidaTerminada)
+        assertEquals(estadoTerminado, viewModel.uiState.value.estado)
+    }
+
+    @Test
+    fun `una partida en curso no esta terminada`() {
+        val motor = MotorPartida(ruleSetDeUnaCategoria(), Random(SEMILLA))
+        val viewModel = PartidaViewModel(RepositorioPartidaFalso(), motor)
+
+        assertFalse(viewModel.uiState.value.partidaTerminada)
+    }
+
+    @Test
+    fun `iniciar partida nueva borra lo guardado y deja un estado inicial limpio`() {
+        val motor = MotorPartida(ruleSetDeUnaCategoria(), Random(SEMILLA))
+        val estadoTerminado = EstadoPartida(
+            jugadores = listOf(Jugador(nombre = "Jugador 1", anotaciones = mapOf(CategoriaId("unica") to 5))),
+            indiceTurno = 0,
+            tiradaActual = null
+        )
+        val repositorio = RepositorioPartidaFalso(estadoTerminado)
+        val viewModel = PartidaViewModel(repositorio, motor)
+        check(viewModel.uiState.value.partidaTerminada)
+
+        viewModel.iniciarPartidaNueva()
+
+        assertEquals(1, repositorio.vecesBorrado)
+        assertNull(repositorio.estadoActual)
+
+        val estado = viewModel.uiState.value
+        assertFalse(estado.cargando)
+        assertFalse(estado.partidaTerminada)
+        assertEquals(1, estado.estado.jugadores.size)
+        assertTrue(estado.estado.jugadores.single().anotaciones.isEmpty())
+        assertNull(estado.estado.tiradaActual)
+        assertEquals(0, estado.estado.indiceTurno)
     }
 }

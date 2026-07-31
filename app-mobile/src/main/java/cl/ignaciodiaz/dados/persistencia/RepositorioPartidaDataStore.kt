@@ -49,4 +49,8 @@ class RepositorioPartidaDataStore(context: Context) : RepositorioPartida {
     }
 
     override suspend fun cargar(): EstadoPartida? = dataStore.data.first()
+
+    override suspend fun borrar() {
+        dataStore.updateData { null }
+    }
 }

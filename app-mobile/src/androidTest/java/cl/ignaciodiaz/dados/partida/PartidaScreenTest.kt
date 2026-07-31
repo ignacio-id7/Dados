@@ -27,6 +27,7 @@ class PartidaScreenTest {
     private class RepositorioPartidaSinGuardar : RepositorioPartida {
         override suspend fun guardar(estado: EstadoPartida) = Unit
         override suspend fun cargar(): EstadoPartida? = null
+        override suspend fun borrar() = Unit
     }
 
     @Test

@@ -66,7 +66,8 @@ class MotorPartida(
             subtotalSuperior = subtotalSuperior,
             bonus = bonus,
             subtotalInferior = subtotalInferior,
-            total = subtotalSuperior + bonus + subtotalInferior
+            total = subtotalSuperior + bonus + subtotalInferior,
+            umbralBonus = ruleSet.bonusSeccionSuperior?.umbral
         )
     }
 

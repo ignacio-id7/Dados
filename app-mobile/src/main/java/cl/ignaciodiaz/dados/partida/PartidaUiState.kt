@@ -13,10 +13,14 @@ import cl.ignaciodiaz.dados.core.motor.Puntaje
 // "cargando" es true mientras se espera la respuesta del repositorio (decisión 41).
 // Mientras tanto, "estado" es un valor de relleno (partida nueva) que la pantalla no
 // debe dibujar: mostrarlo confundiría al jugador con un tablero que luego cambia.
+//
+// "partidaTerminada" lo decide el motor (motor.partidaTerminada), nunca la pantalla
+// (decisión 42): la pantalla solo reacciona mostrando el panel de fin de partida.
 data class PartidaUiState(
     val estado: EstadoPartida,
     val accionesLegales: List<Accion>,
     val puntaje: Puntaje,
     val previsualizaciones: Map<CategoriaId, Int?>,
-    val cargando: Boolean
+    val cargando: Boolean,
+    val partidaTerminada: Boolean
 )

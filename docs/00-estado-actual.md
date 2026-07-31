@@ -71,11 +71,11 @@ Detalle y motivos en `02-decisiones.md`. Reglamento completo y alcance del MVP e
 
 ## Siguiente paso
 
-**Paso 13: pantalla de fin de partida y háptica al lanzar.** Son los dos últimos elementos del alcance del MVP (decisión 8), aparte del menú de inicio, que va al final por la decisión 38.
+**Paso 15: háptica al lanzar.** Es el último elemento del alcance del MVP (decisión 8) antes del menú de inicio, que va al final por la decisión 38.
 
-**El juego es jugable de punta a punta y la partida sobrevive a que el sistema mate el proceso.** `:core` completo con 77 tests; `:app-mobile` con la pantalla conectada al motor y persistencia sobre DataStore.
+**El juego es jugable de principio a fin, con puntaje final y partida nueva, y sobrevive a que el sistema mate el proceso.** `:core` con 78 tests; `:app-mobile` con la pantalla conectada al motor, persistencia sobre DataStore y panel de fin de partida.
 
-Falta del MVP: pantalla de fin de partida, háptica al lanzar y menú de inicio.
+Falta del MVP: háptica al lanzar y menú de inicio.
 
 Método de trabajo: el diseño se discute en el proyecto de Claude Desktop; la implementación la ejecuta Claude Code; el código se revisa antes de commitear.
 

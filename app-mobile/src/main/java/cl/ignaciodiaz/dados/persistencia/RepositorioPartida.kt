@@ -8,4 +8,8 @@ import cl.ignaciodiaz.dados.core.modelo.EstadoPartida
 interface RepositorioPartida {
     suspend fun guardar(estado: EstadoPartida)
     suspend fun cargar(): EstadoPartida?
+
+    // Elimina la partida guardada. La usa "Partida nueva": si solo se reemplazara el
+    // estado en memoria, al reabrir la app volvería la partida terminada.
+    suspend fun borrar()
 }

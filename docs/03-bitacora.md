@@ -215,3 +215,24 @@ Registro cronológico. Se actualiza al final de cada sesión de trabajo.
   - Resuelto igual que las dos anteriores: `GRADLE_USER_HOME = C:\Gradle`, fuera del perfil de usuario. Se descartó la alternativa de activar UTF-8 global en Windows, que sigue en beta y rompe programas antiguos. Tras el cambio, `.\gradlew test` termina en `BUILD SUCCESSFUL` en todos los módulos.
 
 - **Siguiente paso:** pantalla de fin de partida y háptica al lanzar. Con eso queda cerrado el alcance del MVP salvo el menú de inicio, diferido al final por la decisión 38.
+
+---
+
+### 2026-08-01 — Fin de partida, y el caché de configuración envenenado
+
+- **Qué se hizo:**
+  - `Puntaje` expone `umbralBonus: Int?`, para que la interfaz muestre el progreso `60/63` sin conocer el número 63. Nulo si el `RuleSet` no tiene bonus.
+  - `ResumenPuntaje` muestra el subtotal superior como progreso durante toda la partida, no solo al final.
+  - Panel de fin de partida superpuesto al tablero, cerrable para revisar la tabla y reabrible, con el desglose completo y botón de partida nueva.
+  - `RepositorioPartida.borrar()` en las dos implementaciones más la falsa: empezar una partida nueva borra la guardada, si no al reabrir la app volvía la partida terminada.
+  - `PartidaUiState.partidaTerminada` lo calcula `motor.partidaTerminada(estado)`; la pantalla nunca lo decide.
+  - Cerradas las decisiones 42 y 43.
+
+- **Decisiones tomadas:** el fin de partida es un panel sobre el tablero y no una pantalla aparte, para no quitarle al jugador la tabla que acaba de construir (42); el bonus se muestra como progreso `subtotal/umbral` visible durante toda la partida, en vez de "te faltaron N puntos" al final, porque habla mientras el jugador todavía puede hacer algo (43).
+
+- **Problemas encontrados:**
+  - **`ClassNotFoundException: GradleWorkerMain`, y el diagnóstico equivocado que lo acompañó.** El síntoma se atribuyó dos veces a la codificación de Windows con el nombre de usuario con tilde, y la solución propuesta era activar UTF-8 global, que es beta y rompe programas antiguos. La causa real: Claude Code anteponía `GRADLE_USER_HOME="C:/Gradle/home"` —carpeta que no es la configurada— y **esa ejecución guardó un caché de configuración con las rutas equivocadas**. A partir de ahí todas las ejecuciones lo reutilizaban, incluidas las correctas, así que el error sobrevivía a arreglar las variables. Resuelto matando los daemons, borrando `.gradle/configuration-cache` y volviendo a ejecutar. Receta anotada en `CLAUDE.md`.
+  - **Lección de método:** durante dos sesiones se dio por verificado un código cuyos tests solo pasaban por un rodeo (`java` a mano con rutas cortas). `CLAUDE.md` ahora prohíbe explícitamente rodear un `gradlew test` que falle. Un verde obtenido por otro camino no es una señal de verificación.
+  - Un `BUILD SUCCESSFUL` con la mayoría de las tareas «up-to-date» no prueba que los tests se ejecutaran. Para verificar de verdad: `--rerun-tasks`.
+
+- **Siguiente paso:** háptica al lanzar. Después, el menú de inicio, que cierra el MVP.

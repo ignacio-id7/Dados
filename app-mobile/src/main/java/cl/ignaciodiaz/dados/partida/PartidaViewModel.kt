@@ -61,11 +61,22 @@ class PartidaViewModel(
         }
     }
 
+    // Botón "Partida nueva" del panel de fin de partida (decisión 42). Borra la partida
+    // guardada, no solo el estado en memoria: si no, al reabrir la app volvería la
+    // partida terminada.
+    fun iniciarPartidaNueva() {
+        viewModelScope.launch {
+            repositorioPartida.borrar()
+            _uiState.value = construirUiState(estadoNuevaPartida, cargando = false)
+        }
+    }
+
     private fun construirUiState(estado: EstadoPartida, cargando: Boolean) = PartidaUiState(
         estado = estado,
         accionesLegales = motor.accionesLegales(estado),
         puntaje = motor.puntaje(estado.jugadorEnTurno),
         previsualizaciones = categorias.associateWith { id -> motor.puntajeSiSeAnotara(estado, id) },
-        cargando = cargando
+        cargando = cargando,
+        partidaTerminada = motor.partidaTerminada(estado)
     )
 }
