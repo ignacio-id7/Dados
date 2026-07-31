@@ -44,7 +44,7 @@ C:\Proyectos\Dados
 
 ## Qué está pendiente en el entorno
 
-- **Emulador (AVD) no instalado.** La casilla apareció deshabilitada durante la instalación. La virtualización *sí* está habilitada en la BIOS (verificado en Administrador de tareas), así que la causa es un componente de Windows faltante, no el hardware. Se instala después desde el SDK Manager.
+- **Emulador (AVD) no instalado — bloqueante de la primera pantalla jugable.** La casilla apareció deshabilitada durante la instalación. La virtualización *sí* está habilitada en la BIOS (verificado en Administrador de tareas), así que la causa es un componente de Windows faltante, no el hardware. Se instala desde el SDK Manager. Decisión de Ignacio (2026-07-31): la app se probará en el emulador, no en el celular físico, así que resolver esto es requisito antes de poder ejecutar la app.
 - **No actualizar a Android Studio Quail 3** mientras siga en Release Candidate. El aviso de update aparece de forma recurrente; ignorarlo.
 
 ## Decisiones cerradas
@@ -68,11 +68,15 @@ Detalle y motivos en `02-decisiones.md`. Reglamento completo y alcance del MVP e
 
 ## Siguiente paso
 
-**Paso 8: implementar `MotorPartida`** — acciones `Lanzar`, `AlternarRetencion(indice)` y `Anotar(categoriaId)`, avance de turno, detección de fin de partida y cálculo del puntaje total con bonus. Es la primera pieza con estado y transiciones, y donde el bonus por fin se puede testear de verdad.
+**Paso 9: instalar el emulador (AVD)** desde el SDK Manager. Es bloqueante: sin él no se puede ejecutar la app. Toda la lógica del MVP ya está implementada y testeada, así que lo único que falta para tener algo jugable es interfaz — y sin emulador no hay dónde mirarla.
+
+Después: primera pantalla en `:app-mobile` (5 dados, botón de lanzar, tabla de 12 filas) conectada al motor mediante un ViewModel, y luego la persistencia de la partida en curso.
+
+**La lógica de `:core` está completa para el MVP.** Modelo, preset "Clásico" y motor, con 68 tests.
 
 Método de trabajo: el diseño se discute en el proyecto de Claude Desktop; la implementación la ejecuta Claude Code; el código se revisa antes de commitear.
 
-Pasos ya completados: 1) entorno instalado, 2) decisiones cerradas, 3) proyecto creado y repositorio en GitHub, 4) módulo `app` renombrado a `app-mobile`, 5) módulo `:core` creado como biblioteca Kotlin JVM pura, 6) modelo de datos de `:core`, 7) preset "Clásico" con las 12 categorías. 52 tests en verde.
+Pasos ya completados: 1) entorno instalado, 2) decisiones cerradas, 3) proyecto creado y repositorio en GitHub, 4) módulo `app` renombrado a `app-mobile`, 5) módulo `:core` creado como biblioteca Kotlin JVM pura, 6) modelo de datos, 7) preset "Clásico", 8) `MotorPartida`. 68 tests en verde.
 
 Decisiones abiertas que vienen después: diferenciador, nombre del juego, identidad visual, librería de persistencia, publicación y monetización.
 

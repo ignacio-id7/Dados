@@ -43,7 +43,28 @@ Tipos:
 - **`Categoria`** — `CategoriaId`, sección, función de validez (`¿esta tirada califica?`) y función de puntaje (`¿cuánto vale?`). Choice, Four Dice y Full House comparten función de puntaje y se diferencian solo en la de validez.
 - **`RuleSet`** — lista de categorías y bonus de sección superior (umbral y valor, o ninguno). El número de turnos se deriva de contar las categorías; no existe una constante `12`.
 - **`EstadoPartida`** — lista de jugadores, índice de turno, tirada actual y anotaciones por jugador.
-- **`MotorPartida`** — recibe acciones (`Lanzar`, `AlternarRetencion(indice)`, `Anotar(categoriaId)`) y devuelve el estado nuevo o un error si la jugada es ilegal.
+- **`MotorPartida`** — clase construida con un `RuleSet` y un `Random`. Expone `aplicar(estado, accion)` y `accionesLegales(estado)`. El estado entra y sale: no vive dentro del motor (decisión 29).
+
+Acciones, como `sealed interface`:
+
+- **`Lanzar`** — con `tiradaActual == null` es el primer tiro del turno: 5 dados nuevos, ninguno retenido, `lanzamientos = 1`. Con una tirada en curso, relanza solo los dados no retenidos y conserva el valor de los retenidos. La retención persiste dentro del turno y se pierde al cambiar de turno.
+- **`AlternarRetencion(indice)`** — invierte la retención de un dado. El índice apunta siempre al mismo dado, razón por la que `Tirada` conserva el orden.
+- **`Anotar(categoriaId)`** — calcula el puntaje, lo escribe en las anotaciones del jugador, avanza el índice de turno y deja `tiradaActual = null`.
+
+**Sacrificio — el punto donde esto se implementa mal.** `esValida` no decide si la jugada es legal, decide cuánto vale. Anotar en una categoría libre siempre es legal; el puntaje es `puntaje(tirada)` si la tirada califica, o `0` si no. Rechazar la acción hace la partida imposible de terminar en cuanto toca una tirada mala con las categorías fáciles ocupadas.
+
+Reglas de legalidad:
+
+- `Lanzar` es ilegal con los 3 lanzamientos ya usados.
+- `AlternarRetencion` es ilegal sin tirada en curso y después del tercer lanzamiento: retener sin relanzamiento futuro no significa nada.
+- `Anotar` es ilegal sin tirada en curso y sobre una categoría ya usada por ese jugador.
+- Cualquier acción es ilegal con la partida terminada.
+
+**Fin de partida:** todos los jugadores tienen tantas anotaciones como categorías tiene el `RuleSet`.
+
+**Puntaje total:** suma de las anotaciones de sección superior, más el bonus si esa suma alcanza el umbral, más las de sección inferior. Lo calcula el motor, que es quien conoce el `RuleSet` y por tanto la sección de cada `CategoriaId`.
+
+Las jugadas ilegales se reportan con un resultado explícito (`Exito` / `Rechazada`), nunca con excepciones (decisión 30).
 
 Todo el modelo es inmutable: cada acción devuelve un estado nuevo con `copy()`.
 

@@ -154,3 +154,23 @@ Registro cronológico. Se actualiza al final de cada sesión de trabajo.
   - Los tests usaban el nombre real del autor como dato de prueba. Reemplazado por `Jugador 1`, y la regla registrada en `CLAUDE.md` para que no vuelva a ocurrir.
 
 - **Siguiente paso:** implementar `MotorPartida`: acciones `Lanzar`, `AlternarRetencion(indice)` y `Anotar(categoriaId)`, avance de turno, fin de partida y cálculo del puntaje total con bonus.
+
+---
+
+### 2026-07-31 — `MotorPartida` completo
+
+- **Qué se hizo:**
+  - Implementado el paquete `motor/` en `:core`: `Accion` (sealed interface con `Lanzar`, `AlternarRetencion`, `Anotar`), `ResultadoAccion`, `MotivoRechazo` y `MotorPartida`.
+  - `MotorPartida` expone `aplicar(estado, accion)`, `accionesLegales(estado)`, `partidaTerminada(estado)` y `puntajeTotal(jugador)`. No guarda estado propio.
+  - 68 tests en verde en `:core`. Con esto la lógica completa del MVP está implementada y testeada: falta solo la interfaz y la persistencia.
+  - Cerradas las decisiones 29, 30 y 31.
+
+- **Decisiones tomadas:** motor sin estado propio, construido con `RuleSet` y `Random` (29); jugadas ilegales reportadas con `ResultadoAccion.Rechazada`, nunca con excepciones (30); el motor expone `accionesLegales` para que la interfaz pregunte en vez de deducir (31).
+
+- **Problemas encontrados:**
+  - `Rechazada` llevaba un `String` en español. Eso es texto de interfaz dentro de `:core`, prohibido por `CLAUDE.md`: habría obligado a reescribir los mensajes en la Fase B y bloqueado cualquier traducción. Reemplazado por el enum `MotivoRechazo`, que cada app traduce a su propio texto.
+  - El `String` genérico tapaba que `Anotar` se rechazaba por tres causas distintas con el mismo mensaje. Con el enum quedaron separadas y la interfaz puede reaccionar distinto a cada una.
+  - Mejora colateral: `esLegal` y `motivoRechazo` eran dos bloques `when` paralelos que podían desincronizarse. Ahora `esLegal` es `motivoRechazo(...) == null`: una sola fuente de verdad.
+  - Nota de calidad: los tests de lanzamiento replican la semilla en un `Random` independiente para calcular los valores esperados, en vez de hardcodearlos. Verifican la regla, no una secuencia concreta del generador.
+
+- **Siguiente paso:** instalar el emulador (AVD) desde el SDK Manager. Es bloqueante: sin él no se puede ejecutar la app, y toda la lógica del MVP ya está lista para tener interfaz encima.
