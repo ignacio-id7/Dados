@@ -116,3 +116,22 @@ Registro cronológico. Se actualiza al final de cada sesión de trabajo.
   - `.\gradlew` desde PowerShell falló con `JAVA_HOME is not set`. Causa: el único JDK del equipo es el que Android Studio trae embebido (`C:\Program Files\Android\Android Studio\jbr`), que el IDE usa internamente pero no está registrado a nivel de sistema. Resuelto definiendo `JAVA_HOME` a esa ruta en el perfil de usuario.
 
 - **Siguiente paso:** diseñar el modelo de datos de `:core` (dados, tirada, `RuleSet`, `EstadoPartida`) antes de escribir código.
+
+---
+
+### 2026-07-31 — Modelo de datos de `:core`
+
+- **Qué se hizo:**
+  - Cerradas las decisiones 22 a 26 (ver `02-decisiones.md`) y documentado el modelo en `04-arquitectura.md`.
+  - Implementados en `core/.../modelo/` los tipos: `Dado`, `Tirada`, `Seccion`, `CategoriaId`, `Categoria`, `BonusSeccionSuperior`, `RuleSet`, `Jugador` y `EstadoPartida`. Todo inmutable, con validación en los constructores y comentarios en español. 27 tests en verde, incluidos los casos que deben fallar.
+  - Sin motor ni preset "Clásico" todavía: las funciones de validez y puntaje de las categorías concretas son el paso siguiente.
+
+- **Decisiones tomadas:** `RuleSet` es código y `EstadoPartida` es datos (22); `CategoriaId` basado en texto en vez de `enum` (23); las sub-reglas de validez viven solo en las funciones de cada categoría, sin banderas duplicadas (24), lo que anula lo que insinuaba `01-especificacion-juego.md`; se inyecta `kotlin.random.Random` sin interfaz propia (25); modelo inmutable con `copy()` (26).
+
+- **Problemas encontrados:**
+  - `Jugador.puntajeTotal` sumaba solo las anotaciones sin el bonus de sección superior, que depende del `RuleSet`. Un nombre que promete el total y devuelve un número plausible es un bug silencioso esperando a la pantalla de fin de partida. Renombrado a `sumaDeAnotaciones`; el total con bonus lo calculará el motor.
+  - `Categoria` se implementó como `data class` conteniendo lambdas: `equals` comparaba funciones por identidad. Pasada a clase normal con igualdad por `id`.
+  - Aceptado conscientemente: `Tirada` fija 5 dados y 3 lanzamientos como constantes, pese a que se prohibió la constante `12`. El backlog contempla presets con distinto número de categorías, ninguno con distinto número de dados o lanzamientos.
+  - `core/build/` se coló en un commit porque el `.gitignore` raíz decía `/build` (solo la raíz) y `:core` se creó sin `.gitignore` propio. Corregido con `build/` en el `.gitignore` raíz, que cubre cualquier módulo futuro incluido `:app-wear`.
+
+- **Siguiente paso:** implementar el preset "Clásico" —las 12 categorías con sus funciones de validez y puntaje— con tests que cubran explícitamente las aclaraciones de validez de `01-especificacion-juego.md`.

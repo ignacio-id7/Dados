@@ -68,11 +68,13 @@ Detalle y motivos en `02-decisiones.md`. Reglamento completo y alcance del MVP e
 
 ## Siguiente paso
 
-**Paso 6: diseñar el modelo de datos de `:core`** —dados, tirada, `RuleSet`, `EstadoPartida`— antes de escribir código. La discusión de diseño se hace en el proyecto de Claude Desktop; la implementación, en Claude Code.
+**Paso 7: implementar el preset "Clásico"** — las 12 categorías con sus funciones de validez y puntaje, más el bonus de sección superior. Los tests deben cubrir explícitamente las aclaraciones de validez de `01-especificacion-juego.md`: Yacht como Full House, Yacht como Four Dice, Small Straight con subsecuencias, Big Straight como Small Straight.
 
-Después: implementar el motor de puntuación con tests desde el primer commit.
+Después: `MotorPartida` (acciones `Lanzar`, `AlternarRetencion`, `Anotar`) y el cálculo del total con bonus.
 
-Pasos ya completados: 1) entorno instalado, 2) decisiones cerradas, 3) proyecto creado y repositorio en GitHub, 4) módulo `app` renombrado a `app-mobile`, 5) módulo `:core` creado como biblioteca Kotlin JVM pura con `:core:test` en verde.
+Método de trabajo: el diseño se discute en el proyecto de Claude Desktop; la implementación la ejecuta Claude Code; el código se revisa antes de commitear.
+
+Pasos ya completados: 1) entorno instalado, 2) decisiones cerradas, 3) proyecto creado y repositorio en GitHub, 4) módulo `app` renombrado a `app-mobile`, 5) módulo `:core` creado como biblioteca Kotlin JVM pura, 6) modelo de datos de `:core` implementado con 27 tests en verde.
 
 Decisiones abiertas que vienen después: diferenciador, nombre del juego, identidad visual, librería de persistencia, publicación y monetización.
 

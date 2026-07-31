@@ -29,6 +29,26 @@ Prohibido en `:core`:
 
 Salida esperada: una API que reciba acciones ("lanzar", "retener dado n", "anotar en categoría X") y devuelva el nuevo estado de la partida.
 
+## Modelo de datos de `:core`
+
+Cerrado el 2026-07-31 (decisiones 22 a 26).
+
+**Principio rector: el `RuleSet` es código, el `EstadoPartida` es datos.** El `RuleSet` contiene funciones y se construye en memoria al arrancar; no se serializa nunca. El `EstadoPartida` contiene solo valores planos y es lo único que se persiste.
+
+Tipos:
+
+- **`Dado`** — valor de 1 a 6 y si está retenido. Los cinco dados conservan su posición en la lista entre lanzamientos: el índice tiene que seguir significando el mismo dado cuando el jugador lo toca en la interfaz.
+- **`Tirada`** — los 5 dados y cuántos lanzamientos se han usado (0 a 3). Sabe si todavía se puede relanzar.
+- **`CategoriaId`** — identificador estable basado en texto, envuelto en un tipo propio para no confundirlo con un `String` cualquiera.
+- **`Categoria`** — `CategoriaId`, sección, función de validez (`¿esta tirada califica?`) y función de puntaje (`¿cuánto vale?`). Choice, Four Dice y Full House comparten función de puntaje y se diferencian solo en la de validez.
+- **`RuleSet`** — lista de categorías y bonus de sección superior (umbral y valor, o ninguno). El número de turnos se deriva de contar las categorías; no existe una constante `12`.
+- **`EstadoPartida`** — lista de jugadores, índice de turno, tirada actual y anotaciones por jugador.
+- **`MotorPartida`** — recibe acciones (`Lanzar`, `AlternarRetencion(indice)`, `Anotar(categoriaId)`) y devuelve el estado nuevo o un error si la jugada es ilegal.
+
+Todo el modelo es inmutable: cada acción devuelve un estado nuevo con `copy()`.
+
+La aleatoriedad se inyecta como `kotlin.random.Random`, sin interfaz propia intermedia.
+
 ## Regla de portabilidad
 
 Cualquier funcionalidad nueva se evalúa con esta pregunta antes de implementarla: ¿es lógica de juego o es presentación? Si es lógica, va en `:core` y sirve para ambos dispositivos. Si es presentación, va en el módulo de la aplicación correspondiente y se implementará dos veces, una por dispositivo.
