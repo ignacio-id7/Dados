@@ -41,15 +41,17 @@ Ambos cambios llevan tests en `:core` escritos antes que la implementación, sea
 ## 2. `PartidaViewModel` (`:app-mobile`)
 
 ```kotlin
-class PartidaViewModel : ViewModel() {
-    private val ruleSet = presetClasico()
-    private val motor = MotorPartida(ruleSet, Random())
+class PartidaViewModel(
+    private val motor: MotorPartida = MotorPartida(presetClasico(), Random.Default)
+) : ViewModel() {
     // StateFlow<PartidaUiState>, estado inicial: 1 jugador, indiceTurno=0, tiradaActual=null
     fun despachar(accion: Accion) { /* motor.aplicar(estadoActual, accion) */ }
 }
 ```
 
-- Sin factory: constructor sin argumentos, `viewModel()` de Compose lo instancia solo.
+El motor se recibe por constructor con valor por defecto (`Random.Default`, no `Random()`, que no existe en `kotlin.random`). Kotlin genera un constructor sin argumentos cuando todos los parámetros tienen valor por defecto, así que `viewModel()` lo sigue instanciando sin factory — y los tests pueden inyectar un `MotorPartida` con `Random(semilla)` para ser deterministas.
+
+- Sin factory: `viewModel()` de Compose lo instancia solo, gracias al constructor por defecto.
 - `despachar` es el único punto de entrada de eventos. `Exito` reemplaza el estado guardado; `Rechazada` no hace nada. En operación normal `Rechazada` nunca debería ocurrir porque la UI solo ofrece acciones que ya están en `accionesLegales` — es una red de seguridad, no una decisión.
 - Cada vez que el estado cambia, se recalculan `accionesLegales` y `puntaje` pidiéndoselos al motor.
 
@@ -67,7 +69,9 @@ data class PartidaUiState(
 fun nombreDeCategoria(id: CategoriaId): String
 ```
 
-`when` exhaustivo sobre los 12 ids exactos de `PresetClasico` (`ones`, `twos`, ..., `yacht`). El orden de las filas de la tabla sale de iterar `ruleSet.categorias` (vía el estado/puntaje que ya tiene el ViewModel), nunca de una lista propia en la UI — si el `RuleSet` cambiara de orden o cantidad, la tabla lo sigue automáticamente.
+`when` sobre `id.valor` con una rama por cada uno de los 12 ids exactos de `PresetClasico` (`ones`, `twos`, ..., `yacht`). `CategoriaId` es un `value class` sobre `String`: el compilador no puede probar que el `when` es exhaustivo, así que exige un `else` explícito. Ese `else` devuelve `id.valor` crudo (el texto del id, sin traducir) en vez de lanzar una excepción — si algún preset futuro trae una categoría sin nombre mapeado, se ve fea en pantalla en vez de cerrar la app.
+
+El orden de las filas de la tabla sale de iterar `ruleSet.categorias` (vía el estado/puntaje que ya tiene el ViewModel), nunca de una lista propia en la UI — si el `RuleSet` cambiara de orden o cantidad, la tabla lo sigue automáticamente.
 
 ## 4. Tabla de categorías — especificación exacta de previsualización
 
