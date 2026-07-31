@@ -26,6 +26,8 @@ Proyecto base creado en Android Studio y versionado en GitHub. Todas las decisio
 - **Documentos de diseño en `C:\Proyectos\Dados\docs`**, versionados junto al código. Esta es la carpeta de trabajo conectada en Claude Desktop.
 - **Emulador funcionando.** AVD Pixel 8 (1080×2400, 420 dpi) con la imagen `Google APIs Intel x86_64 Atom` de API 36.1. Nunca hubo problema de virtualización: al instalador solo le faltaban el componente Android Emulator y la imagen de sistema, ambos instalados desde el SDK Manager. Se eligió Google APIs en vez de Google Play porque las imágenes con Play Store vienen bloqueadas y estorban al depurar. Decisión de Ignacio (2026-07-31): se prueba en el emulador, no en el celular físico.
 - **`JAVA_HOME` = `C:\Program Files\Android\Android Studio\jbr`**, definido en el perfil de usuario. Sin esto, `.\gradlew` desde PowerShell falla: el único JDK del equipo es el embebido en Android Studio y no está registrado a nivel de sistema.
+- **`GRADLE_USER_HOME` = `C:\Gradle`**, fuera del perfil de usuario. Sin esto, `.\gradlew test` falla al armar el classpath del proceso de tests, porque el nombre de usuario con tilde se corrompe. Tercera vez que la tilde causa un problema, tras el SDK y la ruta del proyecto: **ante cualquier fallo raro de herramientas en este equipo, sospechar primero de una ruta dentro de `C:\Users\Ignacio Díaz\`.**
+- **`.\gradlew test` es el comando de verificación del proyecto.** Corre los tests de todos los módulos. Si algo lo obliga a rodearse con trucos, arreglar el rodeo, no aceptarlo.
 - **Claude Code 2.1.220** instalado y autenticado, con Node.js 24 LTS. La ejecución de código pasa a Claude Code; este chat queda para diseño, arquitectura y planificación. `CLAUDE.md` en la raíz le entrega las reglas en cada sesión.
 
 ## Estructura actual del repositorio
@@ -69,11 +71,11 @@ Detalle y motivos en `02-decisiones.md`. Reglamento completo y alcance del MVP e
 
 ## Siguiente paso
 
-**Paso 11: corregir los dados fantasma.** Cuando `tiradaActual` es null (turno recién iniciado, antes de lanzar), `PartidaScreen` fabrica cinco `Dado(valor = 1)` para rellenar. El jugador ve cinco unos que no existen y no puede distinguirlos de una tirada real de cinco unos, que sería un Yacht. Hay que dibujar dados vacíos —cuadrado redondeado sin puntos, tono apagado— y verificar que ninguno sea tocable en ese estado.
+**Paso 13: pantalla de fin de partida y háptica al lanzar.** Son los dos últimos elementos del alcance del MVP (decisión 8), aparte del menú de inicio, que va al final por la decisión 38.
 
-Después: persistencia de la partida en curso (obligatoria en el MVP), pantalla de fin de partida, háptica al lanzar, y el menú de inicio como último paso (decisión 38).
+**El juego es jugable de punta a punta y la partida sobrevive a que el sistema mate el proceso.** `:core` completo con 77 tests; `:app-mobile` con la pantalla conectada al motor y persistencia sobre DataStore.
 
-**El juego ya es jugable de punta a punta en el emulador.** `:core` completo con 68 tests; `:app-mobile` con la primera pantalla conectada al motor.
+Falta del MVP: pantalla de fin de partida, háptica al lanzar y menú de inicio.
 
 Método de trabajo: el diseño se discute en el proyecto de Claude Desktop; la implementación la ejecuta Claude Code; el código se revisa antes de commitear.
 

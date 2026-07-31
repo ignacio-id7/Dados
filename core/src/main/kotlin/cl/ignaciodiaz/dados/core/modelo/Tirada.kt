@@ -1,8 +1,11 @@
 package cl.ignaciodiaz.dados.core.modelo
 
+import kotlinx.serialization.Serializable
+
 // Los 5 dados de la partida y cuántos lanzamientos se han usado en el turno actual.
 // El orden de la lista es significativo: el índice de un dado debe seguir apuntando
 // al mismo dado entre lanzamientos, porque la interfaz lo referencia por posición.
+@Serializable
 data class Tirada(
     val dados: List<Dado>,
     val lanzamientos: Int

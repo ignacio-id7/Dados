@@ -1,6 +1,7 @@
 package cl.ignaciodiaz.dados.partida
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import cl.ignaciodiaz.dados.core.modelo.CategoriaId
 import cl.ignaciodiaz.dados.core.modelo.EstadoPartida
 import cl.ignaciodiaz.dados.core.modelo.Jugador
@@ -8,9 +9,11 @@ import cl.ignaciodiaz.dados.core.motor.Accion
 import cl.ignaciodiaz.dados.core.motor.MotorPartida
 import cl.ignaciodiaz.dados.core.motor.ResultadoAccion
 import cl.ignaciodiaz.dados.core.reglas.presetClasico
+import cl.ignaciodiaz.dados.persistencia.RepositorioPartida
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 import kotlin.random.Random
 
 // Sostiene el EstadoPartida de una partida de un jugador y traduce toques en Accion.
@@ -18,11 +21,13 @@ import kotlin.random.Random
 // de partida: todo eso lo responde MotorPartida. Si se borra esta clase, no se pierde
 // ninguna regla del juego.
 //
-// El motor se recibe por constructor con valor por defecto: Kotlin genera un
-// constructor sin argumentos cuando todos los parámetros lo tienen, así que
-// viewModel() lo sigue instanciando solo, y los tests pueden inyectar un motor con
-// Random(semilla) para ser deterministas.
+// El repositorio se recibe por constructor (decisión 41): al iniciar, carga la partida
+// guardada y entra directo a ella sin preguntar (decisión 40); si no hay nada guardado
+// o el JSON no se pudo leer, cargar() devuelve null y arranca una partida nueva. Guarda
+// después de cada acción exitosa. El motor también se recibe por constructor, con valor
+// por defecto, para que los tests puedan inyectar uno con Random(semilla) determinista.
 class PartidaViewModel(
+    private val repositorioPartida: RepositorioPartida,
     private val motor: MotorPartida = MotorPartida(presetClasico(), Random.Default)
 ) : ViewModel() {
 
@@ -30,26 +35,37 @@ class PartidaViewModel(
     // ViewModel: no hace falta que viaje dentro del StateFlow.
     val categorias: List<CategoriaId> = motor.categorias
 
-    private val estadoInicial = EstadoPartida(
+    private val estadoNuevaPartida = EstadoPartida(
         jugadores = listOf(Jugador(nombre = "Jugador 1")),
         indiceTurno = 0,
         tiradaActual = null
     )
 
-    private val _uiState = MutableStateFlow(construirUiState(estadoInicial))
+    private val _uiState = MutableStateFlow(construirUiState(estadoNuevaPartida, cargando = true))
     val uiState: StateFlow<PartidaUiState> = _uiState.asStateFlow()
+
+    init {
+        viewModelScope.launch {
+            val estadoGuardado = repositorioPartida.cargar()
+            _uiState.value = construirUiState(estadoGuardado ?: estadoNuevaPartida, cargando = false)
+        }
+    }
 
     fun despachar(accion: Accion) {
         when (val resultado = motor.aplicar(_uiState.value.estado, accion)) {
-            is ResultadoAccion.Exito -> _uiState.value = construirUiState(resultado.estado)
+            is ResultadoAccion.Exito -> {
+                _uiState.value = construirUiState(resultado.estado, cargando = false)
+                viewModelScope.launch { repositorioPartida.guardar(resultado.estado) }
+            }
             is ResultadoAccion.Rechazada -> Unit
         }
     }
 
-    private fun construirUiState(estado: EstadoPartida) = PartidaUiState(
+    private fun construirUiState(estado: EstadoPartida, cargando: Boolean) = PartidaUiState(
         estado = estado,
         accionesLegales = motor.accionesLegales(estado),
         puntaje = motor.puntaje(estado.jugadorEnTurno),
-        previsualizaciones = categorias.associateWith { id -> motor.puntajeSiSeAnotara(estado, id) }
+        previsualizaciones = categorias.associateWith { id -> motor.puntajeSiSeAnotara(estado, id) },
+        cargando = cargando
     )
 }

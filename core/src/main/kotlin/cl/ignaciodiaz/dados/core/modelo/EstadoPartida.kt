@@ -1,8 +1,11 @@
 package cl.ignaciodiaz.dados.core.modelo
 
+import kotlinx.serialization.Serializable
+
 // El estado completo de una partida: es lo único que se persiste (decisión 22). Modela una
 // lista de jugadores desde el primer commit aunque el MVP use uno solo (decisión 19).
 // "tiradaActual" es null cuando el turno todavía no lanzó los dados.
+@Serializable
 data class EstadoPartida(
     val jugadores: List<Jugador>,
     val indiceTurno: Int,

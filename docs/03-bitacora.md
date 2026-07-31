@@ -196,3 +196,22 @@ Registro cronológico. Se actualiza al final de cada sesión de trabajo.
 - **Pendiente inmediato (no hecho):** cuando `tiradaActual` es null, `PartidaScreen` fabrica cinco dados con valor 1. El jugador ve cinco unos inexistentes, indistinguibles de un Yacht real. Hay que dibujar dados vacíos en ese estado y verificar que ninguno sea tocable.
 
 - **Siguiente paso:** corregir los dados fantasma, y después la persistencia de la partida en curso.
+
+---
+
+### 2026-08-01 — Persistencia y entorno de tests reparado
+
+- **Qué se hizo:**
+  - Corregidos los dados fantasma: cuando `tiradaActual` es null la pantalla dibuja cinco dados vacíos y no tocables, en vez de fabricar `Dado(valor = 1)`. De paso se agregó `contentDescription` a cada dado para lectores de pantalla.
+  - Implementada la persistencia de la partida en curso: `@Serializable` en las clases de datos de `:core`, `RepositorioPartida` con implementación sobre DataStore en `:app-mobile`, carga al iniciar el ViewModel y guardado tras cada acción exitosa. `PartidaUiState.cargando` evita dibujar un tablero falso mientras carga.
+  - JSON corrupto o inexistente devuelve `null` y arranca partida nueva; nunca hace caer la app.
+  - Verificado matando el proceso con `am force-stop` y reabriendo: la partida vuelve idéntica, con los mismos dados, la misma retención y el mismo contador de lanzamientos.
+  - Cerradas las decisiones 12, 39, 40 y 41.
+
+- **Decisiones tomadas:** JSON con `kotlinx.serialization` sobre DataStore, guardando tras cada acción (12); `@Serializable` dentro de `:core`, única concesión a la pureza del módulo, justificada porque la biblioteca es Kotlin puro y multiplataforma y la alternativa obligaba a duplicar la traducción en celular y reloj (39); al abrir se entra directo a la partida guardada (40); el ViewModel recibe el repositorio por constructor con factory, lo que anula la parte de la decisión 36 que evitaba la factory (41).
+
+- **Problemas encontrados:**
+  - **`gradlew test` estaba roto en este equipo.** Claude Code lo esquivó ejecutando los tests compilados directamente con `java`, lo que dejaba al proyecto sin un comando confiable que respondiera "¿está todo verde?". Causa: la caché de Gradle vivía en `C:\Users\Ignacio Díaz\.gradle` y el nombre de usuario con tilde corrompía el classpath que Gradle pasa al proceso de tests. Es la tercera vez que la tilde causa un problema en este equipo, tras el SDK y la ruta del proyecto.
+  - Resuelto igual que las dos anteriores: `GRADLE_USER_HOME = C:\Gradle`, fuera del perfil de usuario. Se descartó la alternativa de activar UTF-8 global en Windows, que sigue en beta y rompe programas antiguos. Tras el cambio, `.\gradlew test` termina en `BUILD SUCCESSFUL` en todos los módulos.
+
+- **Siguiente paso:** pantalla de fin de partida y háptica al lanzar. Con eso queda cerrado el alcance del MVP salvo el menú de inicio, diferido al final por la decisión 38.
