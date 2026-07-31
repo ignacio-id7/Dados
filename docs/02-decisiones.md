@@ -1,0 +1,37 @@
+# Registro de decisiones del proyecto
+
+Formato: cada decisión se registra con fecha, opciones consideradas, opción elegida y motivo. Nunca se borra una decisión; si se revierte, se agrega una nueva entrada que la anula.
+
+| # | Decisión | Estado | Elegido | Motivo |
+|---|---|---|---|---|
+| 1 | Plataforma objetivo | **Cerrada (2026-07-31)** | Android: celular en Fase A, Wear OS en Fase B | Iteración más rápida, emulador liviano, no depende de tener el reloj disponible, y permite validar la mecánica antes de enfrentar la restricción de pantalla pequeña. Anula la decisión previa (2026-07-30) que fijaba Wear OS como plataforma única. |
+| 2 | Lenguaje y framework | **Cerrada (2026-07-30)** | Kotlin + Jetpack Compose (y Compose for Wear OS en Fase B) | Stack oficial de Android, un solo lenguaje para ambos dispositivos. |
+| 3 | Estructura de módulos | **Cerrada (2026-07-31)** | `:core` (Kotlin puro) + `:app-mobile` + `:app-wear` | Permite reutilizar el motor de juego sin reescribirlo y deja abierta la puerta a Kotlin Multiplatform. |
+| 4 | Celular de pruebas (modelo y versión de Android) | **Cerrada (2026-07-31)** | Xiaomi Poco F5 Pro, Android 15 (build AQ3A.250226.002) | Dispositivo que Ignacio ya tiene. Nota: los Xiaomi con HyperOS exigen activar "Instalar vía USB" además de "Depuración USB" para instalar desde Android Studio. |
+| 5 | `minSdk` y `targetSdk` | **Cerrada (2026-07-31)** | `minSdk = 26` (Android 8.0), `targetSdk = 36` (Android 16) | `minSdk 26`: `java.time` nativo sin desugaring (necesario si se hace el modo desafío diario con semilla por fecha) e iconos adaptativos, con cobertura ampliamente mayoritaria. `targetSdk 36`: desde el 31-08-2026 Google Play exige API 36 para apps nuevas y actualizaciones. |
+| 6 | Reloj de pruebas para Fase B | **Cerrada (2026-07-30)** | OnePlus Watch 4 | Dispositivo que Ignacio ya tiene. Pantalla redonda 1.5" (466×466 px), Snapdragon W5, OxygenOS Watch 8 sobre Wear OS 6. Es la referencia de diseño de la Fase B. |
+| 7 | Variante de reglas de puntuación | **Cerrada (2026-07-31)** | Preset "Clásico", 12 categorías: bonus 63→+35; Full House y Four Dice = suma de los 5 dados; Small Straight 15, Big Straight 30, Yacht 50 | Se mantiene el bonus de sección superior porque es el mecanismo que da tensión de mediano plazo al juego: sin él la sección superior se vuelve un vertedero de tiradas malas. Se elige suma sobre valores fijos por mayor varianza y decisiones más ricas con dados altos; se acepta como trade-off que los puntajes totales sean menos comparables entre partidas. Detalle completo en `01-especificacion-juego.md`. |
+| 7a | Sub-reglas de validez | **Cerrada (2026-07-31)** | Yacht cuenta como Full House y como Four Dice; Small Straight admite 4 consecutivos cualesquiera entre los 5 dados; Big Straight exige los 5 consecutivos; sin bonificación por Yacht múltiple | Las dos primeras evitan callejones sin salida frustrantes y son lo que espera cualquier jugador. El Yacht múltiple queda fuera del MVP porque sus reglas de comodín son la principal fuente de bugs silenciosos en un motor de puntuación. |
+| 17 | Motor parametrizado por `RuleSet` | **Cerrada (2026-07-31)** | El motor de `:core` recibe un `RuleSet` inmutable y recorre `ruleSet.categorias`; no hardcodea puntajes ni el conjunto de categorías. El MVP construye un único preset y no expone selección al usuario | Hacerlo desde el primer commit cuesta casi lo mismo que hardcodear; retrofitearlo después es un refactor que rompe motores de puntuación en silencio. Separa lo barato (motor general) de lo caro (pantalla de ajustes, presets, persistencia de preferencias), que va al backlog. |
+| 8 | Alcance del MVP de la Fase A | **Cerrada (2026-07-31)** | Partida en solitario completa (12 turnos), tabla de puntajes con bonus y total, anotación obligatoria con sacrificio, pantalla de fin de partida, persistencia de la partida en curso, háptica al lanzar | Criterio: la primera versión jugable debe permitir terminar una partida de verdad y nada más. La persistencia no es opcional en celular: si una llamada mata el proceso y se pierde la partida, el juego no es jugable. Fuera del MVP: multijugador, historial y estadísticas, desafío diario, gesto de sacudir, ajustes de reglas, sonido, animación 3D, cuenta/nube, deshacer. |
+| 19 | Modelo de partida multijugador en `:core` | **Cerrada (2026-07-31)** | `EstadoPartida` contiene una lista de jugadores y un índice de turno desde el primer commit; el MVP la usa con un solo elemento | Mismo argumento que la decisión 17: modelarlo ahora cuesta casi lo mismo, retrofitear un segundo jugador obliga a refactorizar el estado de partida y todos sus tests. Habilita multijugador local (pasar el celular) sin tocar el motor. |
+| 9 | Diferenciador principal | Abierta | — | — |
+| 10 | Nombre del juego | Abierta | — | — |
+| 11 | Identidad visual (paleta, tipografía, estilo de dados) | Abierta | — | — |
+| 12 | Persistencia de partida (librería y formato) | Abierta | — | — |
+| 13 | Solución de UI para la tabla de puntajes en Wear OS | Abierta — Fase B | — | — |
+| 14 | Distribución de la app Wear OS (autónoma o acompañante) | Abierta — Fase B | — | — |
+| 15 | Publicación: sí/no, y en qué tienda | Abierta | — | — |
+| 16 | Monetización: gratis / con anuncios / de pago | Abierta | — | — |
+| 18 | Pantalla de ajustes pre-partida y presets alternativos | Abierta — backlog, fuera del MVP | — | Diferida por la decisión 17: el motor ya la soporta, falta la UI, la persistencia de preferencias y la validación de combinaciones. |
+| 20 | Control de versiones | **Cerrada (2026-07-31)** | Git + repositorio **público** en GitHub, creado antes de renombrar el módulo `app` | Respaldo y capacidad de revertir cuando un refactor rompa la compilación; sirve de portafolio; y es el sustrato para migrar la ejecución a Claude Code más adelante. Público desde el inicio porque hacerlo público después publica igual el historial ya escrito. Nunca se versionan `local.properties`, `build/`, `.gradle/` ni claves de firma (`*.jks`, `*.keystore`). |
+| 21 | Ubicación de los documentos de diseño | **Cerrada (2026-07-31)** | Carpeta `docs/` dentro del repositorio | Las decisiones quedan versionadas junto al código que las implementa y Claude Code las lee directamente del repo. Implica reconectar `C:\Proyectos\Dados` como carpeta de trabajo en Claude Desktop. |
+
+## Decisiones de entorno ya ejecutadas
+
+| Tema | Elegido | Motivo |
+|---|---|---|
+| IDE | Android Studio Quail 2 \| 2026.1.2 (build 2026.1.2.10) + Patch 1 | Versión estable actual. Quail 3 está en Release Candidate: no se instala hasta que pase a estable. |
+| Ubicación del SDK | `C:\Android\Sdk` | La ruta por defecto (`C:\Users\Ignacio Díaz\...`) contiene un espacio y una tilde, lo que rompe herramientas de la cadena de compilación. |
+| Emulador (AVD) | Pendiente de instalar | La casilla apareció deshabilitada en el instalador. La virtualización *sí* está habilitada en la BIOS (verificado en Administrador de tareas), así que la causa es un componente de Windows faltante. Se instala desde el SDK Manager. |
+| Cuenta de desarrollador | No registrarse por ahora | Play Store: US$25 pago único + test cerrado con 12 testers por 14 días. Alternativa gratuita: cuentas de distribución limitada (hasta 20 dispositivos), disponibles globalmente desde agosto 2026. |

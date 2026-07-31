@@ -1,0 +1,76 @@
+# Estado actual del proyecto — punto de traspaso
+
+> **Léeme primero.** Este archivo es el resumen vivo del proyecto. Se actualiza al cerrar cada sesión.
+> Última actualización: 31 de julio de 2026.
+
+## Qué es este proyecto
+
+Juego de dados original basado en la mecánica de dominio público de Yacht (5 dados, 3 lanzamientos por turno, 12 categorías). Nombre, arte, textos e identidad visual propios: no se replican assets ni nombres de aplicaciones existentes.
+
+Dos fases, en orden estricto:
+
+- **Fase A — App Android para celular.** Producto principal. Debe estar completa y jugable antes de tocar nada de reloj.
+- **Fase B — App Wear OS.** Extensión que reutiliza el módulo `:core` de la Fase A sin reescribir lógica.
+
+## Dónde quedamos
+
+Entorno de desarrollo instalado y verificado. Decisiones de plataforma, arquitectura, dispositivo y niveles de API cerradas. **Todavía no se ha escrito una sola línea de código ni se ha creado el proyecto en Android Studio.**
+
+## Qué está funcionando
+
+- **Android Studio Quail 2 | 2026.1.2** (build 2026.1.2.10) + Patch 1, sobre Windows con 24 GB de RAM y ~87 GB libres.
+- **SDK en `C:\Android\Sdk`** — fuera del perfil de usuario a propósito: la ruta por defecto contiene un espacio y una tilde (`C:\Users\Ignacio Díaz\...`), lo que rompe herramientas de la cadena de compilación.
+- **SDK Platform Android 16 "Baklava" (API 36)** instalado.
+
+## Qué está pendiente en el entorno
+
+- **Emulador (AVD) no instalado.** La casilla apareció deshabilitada durante la instalación. La virtualización *sí* está habilitada en la BIOS (verificado en Administrador de tareas), así que la causa es un componente de Windows faltante, no el hardware. Se instala después desde el SDK Manager.
+- **No actualizar a Android Studio Quail 3** mientras siga en Release Candidate. El aviso de update aparece de forma recurrente; ignorarlo.
+
+## Decisiones cerradas
+
+| # | Decisión | Elegido |
+|---|---|---|
+| 1 | Plataforma | Android: celular (Fase A) → Wear OS (Fase B) |
+| 2 | Lenguaje y framework | Kotlin + Jetpack Compose |
+| 3 | Estructura de módulos | `:core` (Kotlin puro) + `:app-mobile` + `:app-wear` |
+| 4 | Celular de pruebas | Xiaomi Poco F5 Pro, Android 15 |
+| 5 | Niveles de API | `minSdk = 26`, `targetSdk = 36` |
+| 6 | Reloj de pruebas (Fase B) | OnePlus Watch 4 — redondo, 1.5", 466×466 px, Wear OS 6 |
+| 7 | Reglas de puntuación | Preset "Clásico", 12 categorías: bonus 63→+35, Full House y Four Dice = suma de los 5 dados, escaleras 15 / 30, Yacht 50. Máximo 325 |
+| 8 | Alcance del MVP (Fase A) | Partida en solitario completa + persistencia + háptica. Nada más |
+| 17 | Motor parametrizado | `:core` recibe un `RuleSet` inmutable; el MVP expone un solo preset |
+| 19 | Modelo multijugador | `EstadoPartida` con lista de jugadores desde el primer commit; el MVP usa uno solo |
+
+Detalle y motivos en `02-decisiones.md`. Reglamento completo y alcance del MVP en `01-especificacion-juego.md`.
+
+## Siguiente paso
+
+Ya no quedan decisiones que bloqueen la implementación. Empieza el código:
+
+1. **Crear el proyecto base en Android Studio.** Empty Activity con Compose, `minSdk 26`, Kotlin DSL. Ruta sin espacios ni tildes.
+2. Renombrar el módulo `app` a `app-mobile`.
+3. Agregar el módulo `:core` como biblioteca Kotlin pura.
+4. Escribir en `:core` el modelo de dados, el `RuleSet` y el motor de puntuación, con tests desde el primer commit.
+
+Decisiones abiertas que vienen después: diferenciador, nombre del juego, identidad visual, librería de persistencia, publicación y monetización.
+
+Backlog de reglas (fuera del MVP, ya anotado en `01-especificacion-juego.md`): preset "Moderno" de 13 categorías, pantalla de ajustes pre-partida, bonificación por Yacht múltiple.
+
+## Riesgos anotados
+
+- **Xiaomi / HyperOS:** para instalar la app desde Android Studio por USB no basta con "Depuración USB"; hay que activar además **"Instalar vía USB"**, que exige cuenta Mi y a veces SIM insertada. Aparecerá al conectar el celular por primera vez.
+- **Descargas del navegador bloqueadas** en este equipo (quedan en 0 B/s). Alternativa que funciona: `curl.exe` desde PowerShell, con `-C -` para reanudar.
+- **Google Play:** desde el 31-08-2026 las apps nuevas deben apuntar a API 36. Registro: US$25 pago único + test cerrado con 12 testers por 14 días en cuenta personal. Alternativa gratuita para portafolio: cuentas de distribución limitada (hasta 20 dispositivos), disponibles globalmente desde agosto de 2026. Decisión actual: no registrarse todavía.
+
+## Mapa de archivos
+
+| Archivo | Contenido |
+|---|---|
+| `00-estado-actual.md` | Este archivo. Resumen vivo y punto de entrada de cada sesión. |
+| `01-especificacion-juego.md` | Reglas del juego. Independiente del dispositivo. |
+| `02-decisiones.md` | Registro de decisiones con motivos. Nunca se borra una decisión. |
+| `03-bitacora.md` | Registro cronológico de sesiones. |
+| `04-arquitectura.md` | Contrato del módulo `:core` y reglas de portabilidad. |
+| `proyecto-yacht-v2-android-primero.md` | Documento de alcance vigente (v2). |
+| `proyecto-yacht-smartwatch-claude-desktop.md` | Documento de alcance original (v1). Superado, se conserva como historial. |
