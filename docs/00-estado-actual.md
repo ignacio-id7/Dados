@@ -24,6 +24,7 @@ Proyecto base creado en Android Studio y versionado en GitHub. Todas las decisio
 - **Proyecto en `C:\Proyectos\Dados`** (ruta sin espacios ni tildes). Plantilla Empty Activity con Compose, package `cl.ignaciodiaz.dados`, `minSdk 26`, Kotlin DSL y catálogo de versiones. Gradle Sync exitoso.
 - **Repositorio Git público:** https://github.com/ignacio-id7/Dados. Dos commits: el proyecto inicial y los documentos de diseño en `docs/`.
 - **Documentos de diseño en `C:\Proyectos\Dados\docs`**, versionados junto al código. Esta es la carpeta de trabajo conectada en Claude Desktop.
+- **Emulador funcionando.** AVD Pixel 8 (1080×2400, 420 dpi) con la imagen `Google APIs Intel x86_64 Atom` de API 36.1. Nunca hubo problema de virtualización: al instalador solo le faltaban el componente Android Emulator y la imagen de sistema, ambos instalados desde el SDK Manager. Se eligió Google APIs en vez de Google Play porque las imágenes con Play Store vienen bloqueadas y estorban al depurar. Decisión de Ignacio (2026-07-31): se prueba en el emulador, no en el celular físico.
 - **`JAVA_HOME` = `C:\Program Files\Android\Android Studio\jbr`**, definido en el perfil de usuario. Sin esto, `.\gradlew` desde PowerShell falla: el único JDK del equipo es el embebido en Android Studio y no está registrado a nivel de sistema.
 - **Claude Code 2.1.220** instalado y autenticado, con Node.js 24 LTS. La ejecución de código pasa a Claude Code; este chat queda para diseño, arquitectura y planificación. `CLAUDE.md` en la raíz le entrega las reglas en cada sesión.
 
@@ -44,7 +45,7 @@ C:\Proyectos\Dados
 
 ## Qué está pendiente en el entorno
 
-- **Emulador (AVD) no instalado — bloqueante de la primera pantalla jugable.** La casilla apareció deshabilitada durante la instalación. La virtualización *sí* está habilitada en la BIOS (verificado en Administrador de tareas), así que la causa es un componente de Windows faltante, no el hardware. Se instala desde el SDK Manager. Decisión de Ignacio (2026-07-31): la app se probará en el emulador, no en el celular físico, así que resolver esto es requisito antes de poder ejecutar la app.
+- (Resuelto el 2026-07-31: el emulador ya funciona. Ver "Qué está funcionando").
 - **No actualizar a Android Studio Quail 3** mientras siga en Release Candidate. El aviso de update aparece de forma recurrente; ignorarlo.
 
 ## Decisiones cerradas
