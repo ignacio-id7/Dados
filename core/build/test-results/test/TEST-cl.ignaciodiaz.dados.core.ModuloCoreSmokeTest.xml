@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="cl.ignaciodiaz.dados.core.ModuloCoreSmokeTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2026-07-31T08:15:18.911Z" hostname="IGNACIO" time="0.004">
-  <properties/>
-  <testcase name="el modulo core compila y ejecuta tests" classname="cl.ignaciodiaz.dados.core.ModuloCoreSmokeTest" time="0.001"/>
-  <system-out><![CDATA[]]></system-out>
-  <system-err><![CDATA[]]></system-err>
-</testsuite>
