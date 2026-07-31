@@ -96,3 +96,23 @@ Registro cronológico. Se actualiza al final de cada sesión de trabajo.
   - Git ya estaba instalado en el equipo (`winget` no encontró actualizaciones).
   - Se subió también la carpeta `.idea/`. Es lo habitual; queda anotado por si genera commits ruidosos.
 - **Siguiente paso:** mover los documentos de diseño a `C:\Proyectos\Dados\docs`, reconectar esa carpeta como carpeta de trabajo, y después renombrar el módulo `app` a `app-mobile`.
+
+---
+
+### 2026-07-31 — Estructura multi-módulo y migración a Claude Code
+
+- **Qué se hizo:**
+  - Renombrado el módulo `app` a `app-mobile` (`git mv` + `include(":app-mobile")` en `settings.gradle.kts`). Gradle Sync exitoso.
+  - Creado el módulo `:core` como biblioteca Kotlin JVM pura: plugin `org.jetbrains.kotlin.jvm` agregado al catálogo de versiones, `jvmToolchain(11)` alineado con `app-mobile`, JUnit 4 como dependencia de test y un test de humo que verifica que el módulo compila y los tests corren. `.\gradlew :core:test` en verde.
+  - Declarada la dependencia `:app-mobile → :core`, en un solo sentido.
+  - Instalado y autenticado Claude Code 2.1.220 (requirió instalar Node.js 24 LTS vía winget). Escrito `CLAUDE.md` en la raíz con las restricciones de arquitectura no negociables.
+
+- **Decisiones tomadas:**
+  - La ejecución de código pasa a Claude Code; el proyecto de Claude Desktop queda para diseño, arquitectura y planificación.
+  - `:core` es un módulo Kotlin JVM, no una biblioteca Android. Sin el SDK en el classpath, un `import android.*` no compila: la regla deja de depender de la disciplina y pasa a depender del compilador. Además los tests corren en la JVM del PC en segundos, sin emulador.
+
+- **Problemas encontrados:**
+  - `00-estado-actual.md` se actualizó antes de ejecutar el rename, así que el `CLAUDE.md` generado a partir de él heredó el dato viejo. Corregido en ambos archivos. Recordatorio: actualizar los documentos después de ejecutar, no antes.
+  - `.\gradlew` desde PowerShell falló con `JAVA_HOME is not set`. Causa: el único JDK del equipo es el que Android Studio trae embebido (`C:\Program Files\Android\Android Studio\jbr`), que el IDE usa internamente pero no está registrado a nivel de sistema. Resuelto definiendo `JAVA_HOME` a esa ruta en el perfil de usuario.
+
+- **Siguiente paso:** diseñar el modelo de datos de `:core` (dados, tirada, `RuleSet`, `EstadoPartida`) antes de escribir código.

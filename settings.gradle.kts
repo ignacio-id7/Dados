@@ -23,4 +23,5 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "Dados"
-include(":app")
+include(":core")
+include(":app-mobile")

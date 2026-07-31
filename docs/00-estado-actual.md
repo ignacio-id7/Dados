@@ -24,12 +24,16 @@ Proyecto base creado en Android Studio y versionado en GitHub. Todas las decisio
 - **Proyecto en `C:\Proyectos\Dados`** (ruta sin espacios ni tildes). Plantilla Empty Activity con Compose, package `cl.ignaciodiaz.dados`, `minSdk 26`, Kotlin DSL y catálogo de versiones. Gradle Sync exitoso.
 - **Repositorio Git público:** https://github.com/ignacio-id7/Dados. Dos commits: el proyecto inicial y los documentos de diseño en `docs/`.
 - **Documentos de diseño en `C:\Proyectos\Dados\docs`**, versionados junto al código. Esta es la carpeta de trabajo conectada en Claude Desktop.
+- **`JAVA_HOME` = `C:\Program Files\Android\Android Studio\jbr`**, definido en el perfil de usuario. Sin esto, `.\gradlew` desde PowerShell falla: el único JDK del equipo es el embebido en Android Studio y no está registrado a nivel de sistema.
+- **Claude Code 2.1.220** instalado y autenticado, con Node.js 24 LTS. La ejecución de código pasa a Claude Code; este chat queda para diseño, arquitectura y planificación. `CLAUDE.md` en la raíz le entrega las reglas en cada sesión.
 
 ## Estructura actual del repositorio
 
 ```
 C:\Proyectos\Dados
-├── app\                  ← módulo único, pendiente de renombrar a app-mobile
+├── app-mobile\           ← app Android (Compose), depende de :core
+├── core\                 ← Kotlin JVM puro, motor del juego (vacío por ahora)
+├── CLAUDE.md             ← reglas de arquitectura que lee Claude Code
 ├── docs\                 ← documentos de diseño (este archivo incluido)
 ├── gradle\               ← wrapper + catálogo de versiones (libs.versions.toml)
 ├── build.gradle.kts      ← build raíz
@@ -64,12 +68,11 @@ Detalle y motivos en `02-decisiones.md`. Reglamento completo y alcance del MVP e
 
 ## Siguiente paso
 
-**Paso 4: renombrar el módulo `app` a `app-mobile`.** Después:
+**Paso 6: diseñar el modelo de datos de `:core`** —dados, tirada, `RuleSet`, `EstadoPartida`— antes de escribir código. La discusión de diseño se hace en el proyecto de Claude Desktop; la implementación, en Claude Code.
 
-5. Agregar el módulo `:core` como biblioteca Kotlin pura y declarar la dependencia `:app-mobile → :core`.
-6. Escribir en `:core` el modelo de dados, el `RuleSet` y el motor de puntuación, con tests desde el primer commit.
+Después: implementar el motor de puntuación con tests desde el primer commit.
 
-Pasos ya completados: 1) entorno instalado, 2) decisiones cerradas, 3) proyecto creado y repositorio en GitHub.
+Pasos ya completados: 1) entorno instalado, 2) decisiones cerradas, 3) proyecto creado y repositorio en GitHub, 4) módulo `app` renombrado a `app-mobile`, 5) módulo `:core` creado como biblioteca Kotlin JVM pura con `:core:test` en verde.
 
 Decisiones abiertas que vienen después: diferenciador, nombre del juego, identidad visual, librería de persistencia, publicación y monetización.
 
