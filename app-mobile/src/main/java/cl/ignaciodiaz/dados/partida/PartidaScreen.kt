@@ -35,7 +35,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.hapticfeedback.HapticFeedback
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
@@ -50,11 +53,17 @@ import cl.ignaciodiaz.dados.core.modelo.Jugador
 import cl.ignaciodiaz.dados.core.modelo.Tirada
 import cl.ignaciodiaz.dados.core.motor.Accion
 import cl.ignaciodiaz.dados.core.motor.Puntaje
+import cl.ignaciodiaz.dados.haptica.RetroalimentacionHaptica
 import cl.ignaciodiaz.dados.persistencia.RepositorioPartidaDataStore
 
 @Composable
 fun PartidaScreen(
-    viewModel: PartidaViewModel = viewModel(factory = fabricaPartidaViewModel(LocalContext.current)),
+    viewModel: PartidaViewModel = viewModel(
+        factory = fabricaPartidaViewModel(
+            context = LocalContext.current,
+            hapticFeedback = LocalHapticFeedback.current
+        )
+    ),
     modifier: Modifier = Modifier
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -341,9 +350,20 @@ private fun PanelFinDePartida(
     }
 }
 
-// Instancia PartidaViewModel con el repositorio de verdad (decisión 41). El contexto de
-// aplicación evita que el DataStore se recree en cada recomposición.
-private fun fabricaPartidaViewModel(context: Context): ViewModelProvider.Factory =
+// Instancia PartidaViewModel con el repositorio de verdad (decisión 41) y la háptica de
+// verdad: LocalHapticFeedback respeta la configuración del sistema (si el jugador la
+// desactivó, Compose simplemente no vibra) y no requiere el permiso VIBRATE. El motor de
+// la retroalimentación es Confirm: el lanzamiento es una acción que se acaba de resolver,
+// no un gesto de mantener presionado. El contexto de aplicación evita que el DataStore se
+// recree en cada recomposición.
+private fun fabricaPartidaViewModel(context: Context, hapticFeedback: HapticFeedback): ViewModelProvider.Factory =
     viewModelFactory {
-        initializer { PartidaViewModel(RepositorioPartidaDataStore(context.applicationContext)) }
+        initializer {
+            PartidaViewModel(
+                repositorioPartida = RepositorioPartidaDataStore(context.applicationContext),
+                retroalimentacionHaptica = RetroalimentacionHaptica {
+                    hapticFeedback.performHapticFeedback(HapticFeedbackType.Confirm)
+                }
+            )
+        }
     }

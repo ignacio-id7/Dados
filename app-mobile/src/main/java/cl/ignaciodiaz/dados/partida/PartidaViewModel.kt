@@ -9,6 +9,7 @@ import cl.ignaciodiaz.dados.core.motor.Accion
 import cl.ignaciodiaz.dados.core.motor.MotorPartida
 import cl.ignaciodiaz.dados.core.motor.ResultadoAccion
 import cl.ignaciodiaz.dados.core.reglas.presetClasico
+import cl.ignaciodiaz.dados.haptica.RetroalimentacionHaptica
 import cl.ignaciodiaz.dados.persistencia.RepositorioPartida
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -26,9 +27,14 @@ import kotlin.random.Random
 // o el JSON no se pudo leer, cargar() devuelve null y arranca una partida nueva. Guarda
 // después de cada acción exitosa. El motor también se recibe por constructor, con valor
 // por defecto, para que los tests puedan inyectar uno con Random(semilla) determinista.
+//
+// retroalimentacionHaptica tiene un valor por defecto sin efecto: la implementación de
+// verdad (LocalHapticFeedback, en Compose) la inyecta la factory de PartidaScreen. Solo
+// se dispara al lanzar con éxito (decisión 8): ni retener ni anotar vibran.
 class PartidaViewModel(
     private val repositorioPartida: RepositorioPartida,
-    private val motor: MotorPartida = MotorPartida(presetClasico(), Random.Default)
+    private val motor: MotorPartida = MotorPartida(presetClasico(), Random.Default),
+    private val retroalimentacionHaptica: RetroalimentacionHaptica = RetroalimentacionHaptica {}
 ) : ViewModel() {
 
     // Ids de categoría en el orden del RuleSet. No cambia durante la vida del
@@ -56,6 +62,7 @@ class PartidaViewModel(
             is ResultadoAccion.Exito -> {
                 _uiState.value = construirUiState(resultado.estado, cargando = false)
                 viewModelScope.launch { repositorioPartida.guardar(resultado.estado) }
+                if (accion is Accion.Lanzar) retroalimentacionHaptica.alLanzar()
             }
             is ResultadoAccion.Rechazada -> Unit
         }

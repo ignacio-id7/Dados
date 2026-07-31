@@ -203,4 +203,59 @@ class PartidaViewModelTest {
         assertNull(estado.estado.tiradaActual)
         assertEquals(0, estado.estado.indiceTurno)
     }
+
+    @Test
+    fun `despachar Lanzar exitoso invoca la retroalimentacion haptica`() {
+        val haptica = RetroalimentacionHapticaFalsa()
+        val viewModel = PartidaViewModel(
+            RepositorioPartidaFalso(),
+            MotorPartida(presetClasico(), Random(SEMILLA)),
+            haptica
+        )
+
+        viewModel.despachar(Accion.Lanzar)
+
+        assertEquals(1, haptica.vecesInvocada)
+    }
+
+    @Test
+    fun `despachar una accion rechazada no invoca la retroalimentacion haptica`() {
+        val haptica = RetroalimentacionHapticaFalsa()
+        val viewModel = PartidaViewModel(
+            RepositorioPartidaFalso(),
+            MotorPartida(presetClasico(), Random(SEMILLA)),
+            haptica
+        )
+
+        // AlternarRetencion es ilegal sin tirada en curso: el turno recien empieza.
+        viewModel.despachar(Accion.AlternarRetencion(0))
+
+        assertEquals(0, haptica.vecesInvocada)
+    }
+
+    @Test
+    fun `retener un dado exitoso no invoca la retroalimentacion haptica`() {
+        val haptica = RetroalimentacionHapticaFalsa()
+        val motor = MotorPartida(presetClasico(), Random(SEMILLA))
+        val viewModel = PartidaViewModel(RepositorioPartidaFalso(), motor, haptica)
+        viewModel.despachar(Accion.Lanzar)
+        val invocacionesTrasLanzar = haptica.vecesInvocada
+
+        viewModel.despachar(Accion.AlternarRetencion(0))
+
+        assertEquals(invocacionesTrasLanzar, haptica.vecesInvocada)
+    }
+
+    @Test
+    fun `anotar exitoso no invoca la retroalimentacion haptica`() {
+        val haptica = RetroalimentacionHapticaFalsa()
+        val motor = MotorPartida(presetClasico(), Random(SEMILLA))
+        val viewModel = PartidaViewModel(RepositorioPartidaFalso(), motor, haptica)
+        viewModel.despachar(Accion.Lanzar)
+        val invocacionesTrasLanzar = haptica.vecesInvocada
+
+        viewModel.despachar(Accion.Anotar(CategoriaId("ones")))
+
+        assertEquals(invocacionesTrasLanzar, haptica.vecesInvocada)
+    }
 }

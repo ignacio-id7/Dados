@@ -71,11 +71,11 @@ Detalle y motivos en `02-decisiones.md`. Reglamento completo y alcance del MVP e
 
 ## Siguiente paso
 
-**Paso 15: háptica al lanzar.** Es el último elemento del alcance del MVP (decisión 8) antes del menú de inicio, que va al final por la decisión 38.
+**Paso 16: menú de inicio** (decisión 38). Es el último elemento del MVP: con él, la Fase A queda completa y jugable. Debe llevar a Jugar, y dejar el lugar previsto para ajustes y estadísticas sin implementarlos.
 
-**El juego es jugable de principio a fin, con puntaje final y partida nueva, y sobrevive a que el sistema mate el proceso.** `:core` con 78 tests; `:app-mobile` con la pantalla conectada al motor, persistencia sobre DataStore y panel de fin de partida.
+**El juego es jugable de principio a fin, con puntaje final, partida nueva y háptica, y sobrevive a que el sistema mate el proceso.** `:core` con 78 tests; `:app-mobile` con la pantalla conectada al motor, persistencia sobre DataStore, panel de fin de partida y háptica al lanzar.
 
-Falta del MVP: háptica al lanzar y menú de inicio.
+**Deuda de verificación:** la háptica está testeada en cuanto a que se invoca, pero el emulador no vibra. Nadie ha comprobado que efectivamente vibre. Requiere instalar en el Poco F5 Pro, con el obstáculo de HyperOS ("Instalar vía USB" con cuenta Mi).
 
 Método de trabajo: el diseño se discute en el proyecto de Claude Desktop; la implementación la ejecuta Claude Code; el código se revisa antes de commitear.
 

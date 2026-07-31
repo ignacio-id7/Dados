@@ -236,3 +236,21 @@ Registro cronológico. Se actualiza al final de cada sesión de trabajo.
   - Un `BUILD SUCCESSFUL` con la mayoría de las tareas «up-to-date» no prueba que los tests se ejecutaran. Para verificar de verdad: `--rerun-tasks`.
 
 - **Siguiente paso:** háptica al lanzar. Después, el menú de inicio, que cierra el MVP.
+
+---
+
+### 2026-08-01 — Háptica al lanzar, y caché de configuración desactivado
+
+- **Qué se hizo:**
+  - `RetroalimentacionHaptica` en `:app-mobile`: interfaz mínima con `alLanzar()`, implementada sobre `LocalHapticFeedback` de Compose. No requiere el permiso `VIBRATE` y respeta la configuración de háptica del sistema: si el usuario la desactivó en su teléfono, no vibra. `:core` no se entera de que existe.
+  - `PartidaViewModel` la recibe por constructor con una implementación vacía por defecto, y la invoca solo cuando la acción es `Lanzar` y el motor devuelve `Exito`. Nunca en rechazo, retención ni anotación.
+  - Tests con una implementación falsa que cubren los cuatro casos. `./gradlew test --rerun-tasks` en verde, 28 tareas ejecutadas.
+  - Alcance acotado a propósito: háptica solo al lanzar, por la decisión 8. Un toque al retener un dado queda al backlog.
+
+- **Decisiones tomadas:** **caché de configuración de Gradle desactivado** en `gradle.properties`. Ahorra unos segundos por compilación y a cambio produjo dos fallos falsos con horas de diagnóstico equivocado, porque persiste las rutas de una ejecución mal configurada y contamina todas las siguientes. En un proyecto de una persona el intercambio no se sostiene.
+
+- **Problemas encontrados:**
+  - El fallo de `GradleWorkerMain` reapareció el mismo día: Claude Code probó una vez con las variables antepuestas —lo que `CLAUDE.md` ya prohibía—, esa ejecución reenvenenó el caché, y las dos ejecuciones limpias posteriores lo reutilizaron y fallaron. Resuelto con la receta de recuperación y desactivando el caché de forma permanente.
+  - **Deuda de verificación anotada:** el emulador no vibra, así que la háptica está implementada y testeada en cuanto a que se invoca, pero nadie ha comprobado que efectivamente vibre ni cómo se siente. Es el primer punto donde el emulador no alcanza. Requiere instalar en el Poco F5 Pro, con el obstáculo conocido de HyperOS ("Instalar vía USB" con cuenta Mi).
+
+- **Siguiente paso:** menú de inicio (decisión 38), último elemento del MVP. Con eso la Fase A queda completa y jugable.

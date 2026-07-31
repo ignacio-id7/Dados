@@ -33,6 +33,8 @@ Remove-Item -Recurse -Force .gradle\configuration-cache -ErrorAction SilentlyCon
 .\gradlew test --rerun-tasks
 ```
 
+Volvió a ocurrir el mismo día por la misma vía: una ejecución de prueba con las variables antepuestas reenvenenó el caché y las siguientes, ya correctas, seguían fallando. Por eso el caché de configuración quedó **desactivado** en `gradle.properties`. No reactivarlo sin una razón concreta.
+
 ## Estado actual de los módulos
 
 - **`app-mobile`** — único módulo existente hoy, plantilla Empty Activity generada por Android Studio (Compose, package `cl.ignaciodiaz.dados`, `minSdk 26`, `targetSdk 36`). Ya renombrado desde `app`.
