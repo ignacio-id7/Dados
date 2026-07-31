@@ -17,6 +17,10 @@ class MotorPartida(
     private val random: Random
 ) {
 
+    // Los ids de las categorías del RuleSet, en orden. Le permite a la UI dibujar la
+    // tabla de categorías sin mantener su propia lista ni conocer el RuleSet directamente.
+    val categorias: List<CategoriaId> = ruleSet.categorias.map { it.id }
+
     fun aplicar(estado: EstadoPartida, accion: Accion): ResultadoAccion {
         val motivo = motivoRechazo(estado, accion)
         return if (motivo != null) {
@@ -64,6 +68,15 @@ class MotorPartida(
             subtotalInferior = subtotalInferior,
             total = subtotalSuperior + bonus + subtotalInferior
         )
+    }
+
+    // Cuánto valdría anotar en esa categoría ahora mismo, sin aplicar nada: null si no
+    // hay tirada en curso o la categoría no existe, 0 si la tirada no califica (el
+    // sacrificio es un valor real, no una ausencia), o el puntaje si la tirada califica.
+    fun puntajeSiSeAnotara(estado: EstadoPartida, categoriaId: CategoriaId): Int? {
+        val tiradaActual = estado.tiradaActual ?: return null
+        val categoria = ruleSet.categorias.find { it.id == categoriaId } ?: return null
+        return if (categoria.esValida(tiradaActual)) categoria.puntaje(tiradaActual) else 0
     }
 
     private fun esLegal(estado: EstadoPartida, accion: Accion): Boolean =
@@ -123,9 +136,9 @@ class MotorPartida(
         )
 
     private fun anotar(estado: EstadoPartida, categoriaId: CategoriaId): EstadoPartida {
-        val tiradaActual = estado.tiradaActual!!
-        val categoria = ruleSet.categorias.first { it.id == categoriaId }
-        val puntaje = if (categoria.esValida(tiradaActual)) categoria.puntaje(tiradaActual) else 0
+        // motivoRechazo() ya garantizó, antes de llegar acá, que hay tirada en curso
+        // y que la categoría existe: el resultado nunca es null en este punto.
+        val puntaje = puntajeSiSeAnotara(estado, categoriaId)!!
 
         val jugadorActual = estado.jugadorEnTurno
         val jugadorAnotado = jugadorActual.copy(

@@ -317,6 +317,72 @@ class MotorPartidaTest {
         assertEquals(62, puntajeSinBonus.total)
     }
 
+    // --- categorias ---
+
+    @Test
+    fun `categorias expone los ids del RuleSet en su orden`() {
+        val ruleSet = presetClasico()
+        val motor = MotorPartida(ruleSet, Random(SEMILLA))
+
+        val idsEsperados = listOf(
+            "ones", "twos", "threes", "fours", "fives", "sixes",
+            "choice", "four_dice", "full_house", "small_straight", "big_straight", "yacht"
+        ).map { CategoriaId(it) }
+
+        assertEquals(idsEsperados, motor.categorias)
+    }
+
+    // --- puntajeSiSeAnotara ---
+
+    @Test
+    fun `puntaje si se anotara es nulo sin tirada en curso`() {
+        val ruleSet = presetClasico()
+        val motor = MotorPartida(ruleSet, Random(SEMILLA))
+
+        assertNull(motor.puntajeSiSeAnotara(estadoInicial(1), CategoriaId("yacht")))
+    }
+
+    @Test
+    fun `puntaje si se anotara es nulo para una categoria desconocida`() {
+        val ruleSet = presetClasico()
+        val motor = MotorPartida(ruleSet, Random(SEMILLA))
+        val estado = EstadoPartida(
+            jugadores = listOf(Jugador("Jugador 1")),
+            indiceTurno = 0,
+            tiradaActual = tiradaDePrueba()
+        )
+
+        assertNull(motor.puntajeSiSeAnotara(estado, CategoriaId("no_existe")))
+    }
+
+    @Test
+    fun `puntaje si se anotara es 0 cuando la tirada no califica (sacrificio)`() {
+        val ruleSet = presetClasico()
+        val motor = MotorPartida(ruleSet, Random(SEMILLA))
+        val tiradaQueNoEsYacht = Tirada(listOf(Dado(1), Dado(2), Dado(3), Dado(4), Dado(6)), lanzamientos = 1)
+        val estado = EstadoPartida(
+            jugadores = listOf(Jugador("Jugador 1")),
+            indiceTurno = 0,
+            tiradaActual = tiradaQueNoEsYacht
+        )
+
+        assertEquals(0, motor.puntajeSiSeAnotara(estado, CategoriaId("yacht")))
+    }
+
+    @Test
+    fun `puntaje si se anotara es el puntaje real cuando la tirada califica`() {
+        val ruleSet = presetClasico()
+        val motor = MotorPartida(ruleSet, Random(SEMILLA))
+        val tiradaYacht = Tirada(List(5) { Dado(4) }, lanzamientos = 1)
+        val estado = EstadoPartida(
+            jugadores = listOf(Jugador("Jugador 1")),
+            indiceTurno = 0,
+            tiradaActual = tiradaYacht
+        )
+
+        assertEquals(50, motor.puntajeSiSeAnotara(estado, CategoriaId("yacht")))
+    }
+
     // --- accionesLegales ---
 
     @Test
