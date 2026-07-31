@@ -305,8 +305,16 @@ class MotorPartidaTest {
             anotaciones = jugadorConBonus.anotaciones + (CategoriaId("ones") to 2)
         )
 
-        assertEquals(63 + 35, motor.puntajeTotal(jugadorConBonus))
-        assertEquals(62, motor.puntajeTotal(jugadorSinBonus))
+        val puntajeConBonus = motor.puntaje(jugadorConBonus)
+        assertEquals(63, puntajeConBonus.subtotalSuperior)
+        assertEquals(35, puntajeConBonus.bonus)
+        assertEquals(0, puntajeConBonus.subtotalInferior)
+        assertEquals(98, puntajeConBonus.total)
+
+        val puntajeSinBonus = motor.puntaje(jugadorSinBonus)
+        assertEquals(62, puntajeSinBonus.subtotalSuperior)
+        assertEquals(0, puntajeSinBonus.bonus)
+        assertEquals(62, puntajeSinBonus.total)
     }
 
     // --- accionesLegales ---

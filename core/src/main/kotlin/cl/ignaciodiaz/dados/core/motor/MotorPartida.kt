@@ -43,10 +43,10 @@ class MotorPartida(
     fun partidaTerminada(estado: EstadoPartida): Boolean =
         estado.jugadores.all { it.anotaciones.size == ruleSet.numeroDeTurnos }
 
-    // Suma de sección superior (más el bonus si alcanza el umbral) más la suma de
-    // sección inferior. Vive acá porque el motor es quien conoce el RuleSet y por
-    // lo tanto la sección de cada categoría.
-    fun puntajeTotal(jugador: Jugador): Int {
+    // Desglose del puntaje de un jugador: subtotal de sección superior, bonus si
+    // alcanza el umbral, subtotal de sección inferior y total. Vive acá porque el
+    // motor es quien conoce el RuleSet y por lo tanto la sección de cada categoría.
+    fun puntaje(jugador: Jugador): Puntaje {
         val categoriaPorId = ruleSet.categorias.associateBy { it.id }
         val subtotalSuperior = jugador.anotaciones
             .filterKeys { categoriaPorId.getValue(it).seccion == Seccion.SUPERIOR }
@@ -58,7 +58,12 @@ class MotorPartida(
             ?.takeIf { subtotalSuperior >= it.umbral }
             ?.valor
             ?: 0
-        return subtotalSuperior + bonus + subtotalInferior
+        return Puntaje(
+            subtotalSuperior = subtotalSuperior,
+            bonus = bonus,
+            subtotalInferior = subtotalInferior,
+            total = subtotalSuperior + bonus + subtotalInferior
+        )
     }
 
     private fun esLegal(estado: EstadoPartida, accion: Accion): Boolean =
