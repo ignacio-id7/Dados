@@ -7,7 +7,7 @@ import org.junit.Test
 
 class EstadoPartidaTest {
 
-    private val jugadores = listOf(Jugador("Ignacio"), Jugador("Invitado"))
+    private val jugadores = listOf(Jugador("Jugador 1"), Jugador("Invitado"))
 
     @Test
     fun `el jugador en turno corresponde al indice de turno`() {

@@ -68,15 +68,15 @@ Detalle y motivos en `02-decisiones.md`. Reglamento completo y alcance del MVP e
 
 ## Siguiente paso
 
-**Paso 7: implementar el preset "Clásico"** — las 12 categorías con sus funciones de validez y puntaje, más el bonus de sección superior. Los tests deben cubrir explícitamente las aclaraciones de validez de `01-especificacion-juego.md`: Yacht como Full House, Yacht como Four Dice, Small Straight con subsecuencias, Big Straight como Small Straight.
-
-Después: `MotorPartida` (acciones `Lanzar`, `AlternarRetencion`, `Anotar`) y el cálculo del total con bonus.
+**Paso 8: implementar `MotorPartida`** — acciones `Lanzar`, `AlternarRetencion(indice)` y `Anotar(categoriaId)`, avance de turno, detección de fin de partida y cálculo del puntaje total con bonus. Es la primera pieza con estado y transiciones, y donde el bonus por fin se puede testear de verdad.
 
 Método de trabajo: el diseño se discute en el proyecto de Claude Desktop; la implementación la ejecuta Claude Code; el código se revisa antes de commitear.
 
-Pasos ya completados: 1) entorno instalado, 2) decisiones cerradas, 3) proyecto creado y repositorio en GitHub, 4) módulo `app` renombrado a `app-mobile`, 5) módulo `:core` creado como biblioteca Kotlin JVM pura, 6) modelo de datos de `:core` implementado con 27 tests en verde.
+Pasos ya completados: 1) entorno instalado, 2) decisiones cerradas, 3) proyecto creado y repositorio en GitHub, 4) módulo `app` renombrado a `app-mobile`, 5) módulo `:core` creado como biblioteca Kotlin JVM pura, 6) modelo de datos de `:core`, 7) preset "Clásico" con las 12 categorías. 52 tests en verde.
 
 Decisiones abiertas que vienen después: diferenciador, nombre del juego, identidad visual, librería de persistencia, publicación y monetización.
+
+> **Bloqueante antes de publicar (decisión 28):** el `applicationId` es hoy `cl.ignaciodiaz.dados` y **no se puede cambiar una vez publicada la app en Google Play**. Se decide junto con el nombre del juego (decisión 10). Mientras nada esté publicado, renombrarlo cuesta minutos; después, es imposible. No publicar sin haber cerrado esta decisión.
 
 Backlog de reglas (fuera del MVP, ya anotado en `01-especificacion-juego.md`): preset "Moderno" de 13 categorías, pantalla de ajustes pre-partida, bonificación por Yacht múltiple.
 

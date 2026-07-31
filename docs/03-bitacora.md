@@ -135,3 +135,22 @@ Registro cronológico. Se actualiza al final de cada sesión de trabajo.
   - `core/build/` se coló en un commit porque el `.gitignore` raíz decía `/build` (solo la raíz) y `:core` se creó sin `.gitignore` propio. Corregido con `build/` en el `.gitignore` raíz, que cubre cualquier módulo futuro incluido `:app-wear`.
 
 - **Siguiente paso:** implementar el preset "Clásico" —las 12 categorías con sus funciones de validez y puntaje— con tests que cubran explícitamente las aclaraciones de validez de `01-especificacion-juego.md`.
+
+---
+
+### 2026-07-31 — Preset "Clásico" y regla sobre datos personales
+
+- **Qué se hizo:**
+  - Implementado `reglas/PresetClasico.kt`: función que construye el `RuleSet` de las 12 categorías con sus funciones de validez y puntaje, más el bonus 63 → +35. Identificadores fijados en inglés, calcados de las tablas de la especificación: `ones`, `twos`, `threes`, `fours`, `fives`, `sixes`, `choice`, `four_dice`, `full_house`, `small_straight`, `big_straight`, `yacht`.
+  - 52 tests en verde en `:core`, con cobertura explícita de cada aclaración de validez y de los casos negativos.
+  - Cerrada la decisión 27 y registrada en `CLAUDE.md`: el nombre real del autor se mantiene en el identificador de la aplicación como señal de autoría, y queda prohibido en datos de prueba, nombres por defecto, ejemplos y cadenas de interfaz.
+  - Abierta la decisión 28 y marcada como bloqueante antes de publicar: el `applicationId` definitivo se decide junto con el nombre del juego.
+
+- **Decisiones tomadas:** identificadores de categoría en inglés y definitivos, porque se persisten y mapean 1:1 con la especificación (renombrarlos rompería las partidas guardadas). Uso del nombre real del autor acotado al `applicationId` (27). El `applicationId` definitivo queda pendiente del nombre del juego (28).
+
+- **Problemas encontrados:**
+  - El test del bonus contenía aserciones tautológicas (`assertTrue(63 >= bonus.umbral)`) que comparaban un literal contra el valor recién leído: verdaderas por construcción, incapaces de fallar. Eliminadas. El comportamiento real del bonus solo se puede testear cuando exista el motor.
+  - Faltaba el caso de Small Straight con un dado repetido, `(1,2,3,4,4)`, que sí debe ser válido. Agregado; pasó sin tocar la implementación, porque la validez ya se evalúa sobre el conjunto de valores distintos.
+  - Los tests usaban el nombre real del autor como dato de prueba. Reemplazado por `Jugador 1`, y la regla registrada en `CLAUDE.md` para que no vuelva a ocurrir.
+
+- **Siguiente paso:** implementar `MotorPartida`: acciones `Lanzar`, `AlternarRetencion(indice)` y `Anotar(categoriaId)`, avance de turno, fin de partida y cálculo del puntaje total con bonus.

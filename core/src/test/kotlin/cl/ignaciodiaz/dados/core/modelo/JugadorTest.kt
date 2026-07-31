@@ -7,7 +7,7 @@ class JugadorTest {
 
     @Test
     fun `un jugador nuevo no tiene anotaciones`() {
-        val jugador = Jugador(nombre = "Ignacio")
+        val jugador = Jugador(nombre = "Jugador 1")
 
         assertEquals(0, jugador.sumaDeAnotaciones)
     }
@@ -15,7 +15,7 @@ class JugadorTest {
     @Test
     fun `la suma de anotaciones suma las anotaciones`() {
         val jugador = Jugador(
-            nombre = "Ignacio",
+            nombre = "Jugador 1",
             anotaciones = mapOf(
                 CategoriaId("unos") to 3,
                 CategoriaId("yacht") to 50

@@ -8,6 +8,7 @@ Reglas del proyecto Dados (juego de dados original, inspirado en la mecánica de
 - **Ninguna regla del juego vive en un composable ni en un ViewModel.** Toda lógica de juego (dados, retención/relanzamiento, evaluación de categorías, puntajes, bonus, turnos, jugadas legales) va en `:core`. Antes de escribir código nuevo, preguntar: ¿es lógica de juego o es presentación? Lógica → `:core`, sirve para celular y reloj. Presentación → módulo de la app, se implementa una vez por dispositivo.
 - **El motor se parametriza con un `RuleSet` inmutable.** El motor recorre `ruleSet.categorias`, nunca un enum fijo, y no hardcodea puntajes ni el conjunto de categorías. No agregar atajos que asuman el preset "Clásico" a nivel de motor.
 - **Todo el código se comenta en español.**
+- **Datos personales solo donde signifiquen autoría.** El identificador `cl.ignaciodiaz.dados` es autoría deliberada. Fuera de eso, prohibido usar el nombre real del autor en datos de prueba, nombres de jugador por defecto, valores de ejemplo, comentarios o cadenas de la interfaz: usar nombres neutros (`Jugador 1`, `Jugadora`, `test`). Tampoco incluir rutas locales con el nombre de usuario de Windows en código o recursos.
 - **Generación aleatoria inyectable** en `:core` (necesaria para tests con semilla fija y para el futuro modo desafío diario).
 - **`EstadoPartida` modela una lista de jugadores** e índice de turno desde el primer commit, aunque el MVP use un solo jugador. No colapsar el modelo a un solo jugador "para simplificar".
 
