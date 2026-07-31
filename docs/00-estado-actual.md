@@ -69,15 +69,23 @@ Detalle y motivos en `02-decisiones.md`. Reglamento completo y alcance del MVP e
 
 ## Siguiente paso
 
-**Paso 9: instalar el emulador (AVD)** desde el SDK Manager. Es bloqueante: sin él no se puede ejecutar la app. Toda la lógica del MVP ya está implementada y testeada, así que lo único que falta para tener algo jugable es interfaz — y sin emulador no hay dónde mirarla.
+**Paso 11: corregir los dados fantasma.** Cuando `tiradaActual` es null (turno recién iniciado, antes de lanzar), `PartidaScreen` fabrica cinco `Dado(valor = 1)` para rellenar. El jugador ve cinco unos que no existen y no puede distinguirlos de una tirada real de cinco unos, que sería un Yacht. Hay que dibujar dados vacíos —cuadrado redondeado sin puntos, tono apagado— y verificar que ninguno sea tocable en ese estado.
 
-Después: primera pantalla en `:app-mobile` (5 dados, botón de lanzar, tabla de 12 filas) conectada al motor mediante un ViewModel, y luego la persistencia de la partida en curso.
+Después: persistencia de la partida en curso (obligatoria en el MVP), pantalla de fin de partida, háptica al lanzar, y el menú de inicio como último paso (decisión 38).
 
-**La lógica de `:core` está completa para el MVP.** Modelo, preset "Clásico" y motor, con 68 tests.
+**El juego ya es jugable de punta a punta en el emulador.** `:core` completo con 68 tests; `:app-mobile` con la primera pantalla conectada al motor.
 
 Método de trabajo: el diseño se discute en el proyecto de Claude Desktop; la implementación la ejecuta Claude Code; el código se revisa antes de commitear.
 
-Pasos ya completados: 1) entorno instalado, 2) decisiones cerradas, 3) proyecto creado y repositorio en GitHub, 4) módulo `app` renombrado a `app-mobile`, 5) módulo `:core` creado como biblioteca Kotlin JVM pura, 6) modelo de datos, 7) preset "Clásico", 8) `MotorPartida`. 68 tests en verde.
+Pasos ya completados: 1) entorno instalado, 2) decisiones cerradas, 3) proyecto creado y repositorio en GitHub, 4) módulo `app` renombrado a `app-mobile`, 5) módulo `:core` creado como biblioteca Kotlin JVM pura, 6) modelo de datos, 7) preset "Clásico", 8) `MotorPartida`, 9) emulador funcionando, 10) primera pantalla jugable conectada al motor.
+
+## Cómo retomar una sesión
+
+1. Abrir Android Studio con el proyecto y esperar el Gradle Sync.
+2. Arrancar el AVD Pixel 8 desde **Tools → Device Manager**.
+3. En PowerShell: `cd C:\Proyectos\Dados` y luego `claude`, para la ejecución de código.
+4. En Claude Desktop, abrir el proyecto "Watch Dice!" para diseño y decisiones. Lee este archivo y `03-bitacora.md` al empezar.
+5. Verificar que el repositorio esté limpio: `git status`.
 
 Decisiones abiertas que vienen después: diferenciador, nombre del juego, identidad visual, librería de persistencia, publicación y monetización.
 

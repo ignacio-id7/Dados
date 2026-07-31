@@ -174,3 +174,25 @@ Registro cronológico. Se actualiza al final de cada sesión de trabajo.
   - Nota de calidad: los tests de lanzamiento replican la semilla en un `Random` independiente para calcular los valores esperados, en vez de hardcodearlos. Verifican la regla, no una secuencia concreta del generador.
 
 - **Siguiente paso:** instalar el emulador (AVD) desde el SDK Manager. Es bloqueante: sin él no se puede ejecutar la app, y toda la lógica del MVP ya está lista para tener interfaz encima.
+
+---
+
+### 2026-07-31 — Emulador funcionando y primera pantalla jugable
+
+- **Qué se hizo:**
+  - Resuelto el emulador. Nunca hubo problema de virtualización: al instalador solo le faltaban el componente Android Emulator y una imagen de sistema. Instalados desde el SDK Manager (`Google APIs Intel x86_64 Atom`, API 36.1) y creado el AVD Pixel 8.
+  - Validada la cadena completa compilando e instalando la plantilla en el emulador antes de escribir interfaz.
+  - Implementada la primera pantalla jugable en `:app-mobile`: `PartidaViewModel`, `PartidaUiState`, `PartidaScreen` y `CategoriaTexto`. Dados dibujados con `Canvas`, botón de lanzar, tabla de 12 filas con previsualizaciones y resumen de puntaje con bonus.
+  - Agregadas dos consultas a `MotorPartida`: `puntaje(jugador): Puntaje` (desglose con subtotales y bonus, reemplaza a `puntajeTotal`) y `puntajeSiSeAnotara(estado, categoriaId)`, que `anotar()` reutiliza internamente para que "cuánto vale anotar aquí" tenga una sola implementación.
+  - Cerradas las decisiones 32 a 38.
+
+- **Decisiones tomadas:** Compose nativo, Unity descartado porque no soporta Wear OS (32); skins como presentación pura fuera de `:core` (33); cosméticos con moneda del juego en vez de dinero real, recomendado y pendiente (34); dados 3D alcanzables en nativo mediante animaciones pre-generadas sobre modelo 3D, con el valor decidido siempre por `:core` y nunca por la física (35); el ViewModel despacha y guarda, no decide (36); dados y tabla en una sola pantalla (37); menú de inicio diferido al final del MVP (38).
+
+- **Problemas encontrados:**
+  - La especificación que generó Superpowers se contradecía: el ViewModel construía su propio `Random`, pero los tests decían usar semilla fija. Corregido inyectando el motor por constructor con valor por defecto, aprovechando que Kotlin genera un constructor sin argumentos cuando todos los parámetros lo tienen — así `viewModel()` sigue funcionando sin factory.
+  - Superpowers no escribe código hasta que se aprueba una especificación y luego un plan. Se confundió dos veces "presentó el plan" con "terminó". Conviene mirar qué está esperando antes de asumir que acabó.
+  - Falsa alarma: se sospechó un error de puntaje leyendo una captura del emulador. La aritmética confirmó que era correcto — un valor ya anotado se confundió con una previsualización. Verificar en el código antes de reportar un bug a partir de una captura.
+
+- **Pendiente inmediato (no hecho):** cuando `tiradaActual` es null, `PartidaScreen` fabrica cinco dados con valor 1. El jugador ve cinco unos inexistentes, indistinguibles de un Yacht real. Hay que dibujar dados vacíos en ese estado y verificar que ninguno sea tocable.
+
+- **Siguiente paso:** corregir los dados fantasma, y después la persistencia de la partida en curso.
