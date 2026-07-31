@@ -1,7 +1,7 @@
 # Estado actual del proyecto — punto de traspaso
 
 > **Léeme primero.** Este archivo es el resumen vivo del proyecto. Se actualiza al cerrar cada sesión.
-> Última actualización: 31 de julio de 2026.
+> Última actualización: 31 de julio de 2026 (tras crear el repositorio, antes de renombrar el módulo).
 
 ## Qué es este proyecto
 
@@ -14,13 +14,29 @@ Dos fases, en orden estricto:
 
 ## Dónde quedamos
 
-Entorno de desarrollo instalado y verificado. Decisiones de plataforma, arquitectura, dispositivo y niveles de API cerradas. **Todavía no se ha escrito una sola línea de código ni se ha creado el proyecto en Android Studio.**
+Proyecto base creado en Android Studio y versionado en GitHub. Todas las decisiones que bloqueaban la implementación están cerradas. **Todavía no se ha escrito código propio del juego:** el único código en el repositorio es la plantilla Empty Activity que generó Android Studio. El siguiente movimiento es estructural: renombrar `app` a `app-mobile` y agregar `:core`.
 
 ## Qué está funcionando
 
 - **Android Studio Quail 2 | 2026.1.2** (build 2026.1.2.10) + Patch 1, sobre Windows con 24 GB de RAM y ~87 GB libres.
 - **SDK en `C:\Android\Sdk`** — fuera del perfil de usuario a propósito: la ruta por defecto contiene un espacio y una tilde (`C:\Users\Ignacio Díaz\...`), lo que rompe herramientas de la cadena de compilación.
 - **SDK Platform Android 16 "Baklava" (API 36)** instalado.
+- **Proyecto en `C:\Proyectos\Dados`** (ruta sin espacios ni tildes). Plantilla Empty Activity con Compose, package `cl.ignaciodiaz.dados`, `minSdk 26`, Kotlin DSL y catálogo de versiones. Gradle Sync exitoso.
+- **Repositorio Git público:** https://github.com/ignacio-id7/Dados. Dos commits: el proyecto inicial y los documentos de diseño en `docs/`.
+- **Documentos de diseño en `C:\Proyectos\Dados\docs`**, versionados junto al código. Esta es la carpeta de trabajo conectada en Claude Desktop.
+
+## Estructura actual del repositorio
+
+```
+C:\Proyectos\Dados
+├── app\                  ← módulo único, pendiente de renombrar a app-mobile
+├── docs\                 ← documentos de diseño (este archivo incluido)
+├── gradle\               ← wrapper + catálogo de versiones (libs.versions.toml)
+├── build.gradle.kts      ← build raíz
+├── settings.gradle.kts   ← declara rootProject.name = "Dados" e include(":app")
+├── gradle.properties
+└── local.properties      ← NO versionado (contiene la ruta local del SDK)
+```
 
 ## Qué está pendiente en el entorno
 
@@ -41,17 +57,19 @@ Entorno de desarrollo instalado y verificado. Decisiones de plataforma, arquitec
 | 8 | Alcance del MVP (Fase A) | Partida en solitario completa + persistencia + háptica. Nada más |
 | 17 | Motor parametrizado | `:core` recibe un `RuleSet` inmutable; el MVP expone un solo preset |
 | 19 | Modelo multijugador | `EstadoPartida` con lista de jugadores desde el primer commit; el MVP usa uno solo |
+| 20 | Control de versiones | Git + GitHub público (`ignacio-id7/Dados`) |
+| 21 | Ubicación de los documentos de diseño | Carpeta `docs/` dentro del repositorio |
 
 Detalle y motivos en `02-decisiones.md`. Reglamento completo y alcance del MVP en `01-especificacion-juego.md`.
 
 ## Siguiente paso
 
-Ya no quedan decisiones que bloqueen la implementación. Empieza el código:
+**Paso 4: renombrar el módulo `app` a `app-mobile`.** Después:
 
-1. **Crear el proyecto base en Android Studio.** Empty Activity con Compose, `minSdk 26`, Kotlin DSL. Ruta sin espacios ni tildes.
-2. Renombrar el módulo `app` a `app-mobile`.
-3. Agregar el módulo `:core` como biblioteca Kotlin pura.
-4. Escribir en `:core` el modelo de dados, el `RuleSet` y el motor de puntuación, con tests desde el primer commit.
+5. Agregar el módulo `:core` como biblioteca Kotlin pura y declarar la dependencia `:app-mobile → :core`.
+6. Escribir en `:core` el modelo de dados, el `RuleSet` y el motor de puntuación, con tests desde el primer commit.
+
+Pasos ya completados: 1) entorno instalado, 2) decisiones cerradas, 3) proyecto creado y repositorio en GitHub.
 
 Decisiones abiertas que vienen después: diferenciador, nombre del juego, identidad visual, librería de persistencia, publicación y monetización.
 
@@ -61,6 +79,7 @@ Backlog de reglas (fuera del MVP, ya anotado en `01-especificacion-juego.md`): p
 
 - **Xiaomi / HyperOS:** para instalar la app desde Android Studio por USB no basta con "Depuración USB"; hay que activar además **"Instalar vía USB"**, que exige cuenta Mi y a veces SIM insertada. Aparecerá al conectar el celular por primera vez.
 - **Descargas del navegador bloqueadas** en este equipo (quedan en 0 B/s). Alternativa que funciona: `curl.exe` desde PowerShell, con `-C -` para reanudar.
+- **`.idea/` versionada.** Se subió al repositorio en el commit inicial. Android Studio la modifica sola: hay cambios sin commitear en `.idea/*`, `gradle/wrapper/gradle-wrapper.properties` y `gradlew.bat`. Si el ruido molesta, se saca del control de versiones más adelante.
 - **Google Play:** desde el 31-08-2026 las apps nuevas deben apuntar a API 36. Registro: US$25 pago único + test cerrado con 12 testers por 14 días en cuenta personal. Alternativa gratuita para portafolio: cuentas de distribución limitada (hasta 20 dispositivos), disponibles globalmente desde agosto de 2026. Decisión actual: no registrarse todavía.
 
 ## Mapa de archivos
