@@ -51,6 +51,17 @@ class PartidaViewModel(
     val uiState: StateFlow<PartidaUiState> = _uiState.asStateFlow()
 
     init {
+        recargar()
+    }
+
+    // Vuelve a consultar el repositorio (equivalente a MenuViewModel.refrescar()).
+    // PartidaScreen la invoca al entrar: como este ViewModel es una única instancia por
+    // clase en el ViewModelStore de la Activity, sin esto reingresar a la partida
+    // después de "Partida nueva" seguiría mostrando la partida anterior en memoria,
+    // aunque el archivo ya esté borrado. Vuelve a mostrar el indicador de carga mientras
+    // consulta, para no dibujar por un instante el tablero de la visita anterior.
+    fun recargar() {
+        _uiState.value = _uiState.value.copy(cargando = true)
         viewModelScope.launch {
             val estadoGuardado = repositorioPartida.cargar()
             _uiState.value = construirUiState(estadoGuardado ?: estadoNuevaPartida, cargando = false)

@@ -68,6 +68,13 @@ fun PartidaScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
+    // PartidaViewModel es una única instancia por clase en el ViewModelStore de la
+    // Activity: sigue viva aunque esta pantalla salga y vuelva a entrar en composición
+    // (por ejemplo, después de "Partida nueva" desde el menú). Sin este recargo en cada
+    // entrada, seguiría mostrando la partida anterior en memoria aunque el archivo ya
+    // esté borrado (equivalente al refresco de MenuScreen al volver al menú).
+    LaunchedEffect(Unit) { viewModel.recargar() }
+
     // Mientras se espera la respuesta del repositorio no se dibuja el tablero: el
     // jugador vería una partida nueva que luego cambia por la partida guardada
     // (decisión 40, requisito de la pantalla).

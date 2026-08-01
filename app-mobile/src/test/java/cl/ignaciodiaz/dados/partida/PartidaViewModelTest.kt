@@ -205,6 +205,27 @@ class PartidaViewModelTest {
     }
 
     @Test
+    fun `recargar tras borrar el repositorio deja un estado inicial limpio, no la partida anterior`() {
+        val repositorio = RepositorioPartidaFalso()
+        val viewModel = PartidaViewModel(repositorio, MotorPartida(presetClasico(), Random(SEMILLA)))
+        viewModel.despachar(Accion.Lanzar)
+        check(viewModel.uiState.value.estado.tiradaActual != null)
+
+        // Simula "Partida nueva" desde el menú: borra el archivo por fuera de este
+        // ViewModel, como hace MenuViewModel.partidaNueva() sobre el mismo repositorio.
+        kotlinx.coroutines.runBlocking { repositorio.borrar() }
+        viewModel.recargar()
+
+        val estado = viewModel.uiState.value
+        assertFalse(estado.cargando)
+        assertFalse(estado.partidaTerminada)
+        assertEquals(1, estado.estado.jugadores.size)
+        assertTrue(estado.estado.jugadores.single().anotaciones.isEmpty())
+        assertNull(estado.estado.tiradaActual)
+        assertEquals(0, estado.estado.indiceTurno)
+    }
+
+    @Test
     fun `despachar Lanzar exitoso invoca la retroalimentacion haptica`() {
         val haptica = RetroalimentacionHapticaFalsa()
         val viewModel = PartidaViewModel(
