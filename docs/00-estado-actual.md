@@ -71,11 +71,24 @@ Detalle y motivos en `02-decisiones.md`. Reglamento completo y alcance del MVP e
 
 ## Siguiente paso
 
-**Paso 16: menú de inicio** (decisión 38). Es el último elemento del MVP: con él, la Fase A queda completa y jugable. Debe llevar a Jugar, y dejar el lugar previsto para ajustes y estadísticas sin implementarlos.
+## MVP de la Fase A: completo (2026-08-01)
 
-**El juego es jugable de principio a fin, con puntaje final, partida nueva y háptica, y sobrevive a que el sistema mate el proceso.** `:core` con 78 tests; `:app-mobile` con la pantalla conectada al motor, persistencia sobre DataStore, panel de fin de partida y háptica al lanzar.
+Todo el alcance de la decisión 8 está implementado, testeado y commiteado: menú de inicio, partida de 12 turnos, retención y relanzamiento, anotación obligatoria con sacrificio, tabla con previsualizaciones, bonus, puntaje final, persistencia que sobrevive a que el sistema mate el proceso, y háptica al lanzar.
 
-**Deuda de verificación:** la háptica está testeada en cuanto a que se invoca, pero el emulador no vibra. Nadie ha comprobado que efectivamente vibre. Requiere instalar en el Poco F5 Pro, con el obstáculo de HyperOS ("Instalar vía USB" con cuenta Mi).
+**Paso 17: cerrar las decisiones que le dan carácter al juego.** No son código:
+
+1. **Decisión 10 — nombre del juego.** Arrastra la decisión 28, el `applicationId` definitivo, que tras publicar en Google Play no se puede cambiar nunca.
+2. **Decisión 9 — diferenciador.** El previsto es el gesto de sacudir, pero no está decidido formalmente ni implementado.
+3. **Decisión 11 — identidad visual.** Hoy la app es Material 3 por defecto: funcional y anónima.
+
+**Deudas técnicas anotadas:**
+
+- La háptica está testeada en cuanto a que se invoca, pero el emulador no vibra: nadie ha comprobado que efectivamente vibre.
+- El gesto de sacudir exige el acelerómetro, que el emulador no simula de forma útil.
+
+Ambas requieren instalar en el Poco F5 Pro, con el obstáculo conocido de HyperOS ("Instalar vía USB", que pide cuenta Mi).
+
+**La Fase B (Wear OS) no ha empezado y no debe empezar hasta cerrar lo anterior.** `:core` está completo y es exactamente lo que la app de reloj reutilizará sin reescribir lógica.
 
 Método de trabajo: el diseño se discute en el proyecto de Claude Desktop; la implementación la ejecuta Claude Code; el código se revisa antes de commitear.
 

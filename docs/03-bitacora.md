@@ -254,3 +254,24 @@ Registro cronológico. Se actualiza al final de cada sesión de trabajo.
   - **Deuda de verificación anotada:** el emulador no vibra, así que la háptica está implementada y testeada en cuanto a que se invoca, pero nadie ha comprobado que efectivamente vibre ni cómo se siente. Es el primer punto donde el emulador no alcanza. Requiere instalar en el Poco F5 Pro, con el obstáculo conocido de HyperOS ("Instalar vía USB" con cuenta Mi).
 
 - **Siguiente paso:** menú de inicio (decisión 38), último elemento del MVP. Con eso la Fase A queda completa y jugable.
+
+---
+
+### 2026-08-01 — Menú de inicio: MVP de la Fase A completo
+
+- **Qué se hizo:**
+  - `DadosApp` como composable raíz con navegación por estado, sin librería. `BackHandler` para que atrás vuelva al menú desde la partida y cierre la app desde el menú.
+  - `MenuScreen`, `MenuUiState` y `MenuViewModel`: "Continuar" solo si hay partida guardada, "Partida nueva" siempre, y confirmación antes de destruir una partida en curso sin terminar. Estado de carga mientras se consulta el repositorio, para que los botones no salten de lugar.
+  - Cerradas las decisiones 44, 45 y 46. La 45 supersede parcialmente la 40: la app abre en el menú, no directo a la partida.
+  - **Con esto el alcance del MVP definido por la decisión 8 está completo.**
+
+- **Decisiones tomadas:** navegación por estado sin librería, con `BackHandler` obligatorio (44); la app abre en el menú con "Continuar" destacado (45); el menú muestra solo lo que existe, sin botones desactivados de ajustes ni estadísticas (46).
+
+- **Problemas encontrados:**
+  - Claude Code detectó por su cuenta que los ViewModels viven en el `ViewModelStore` de la Activity, así que volver a la partida tras "Partida nueva" reutilizaba el ViewModel viejo con la partida anterior en memoria pese a estar borrado el archivo. Buen hallazgo, mala solución: lo resolvió con `viewModel(key = ...)` y una clave incremental, lo que crea una instancia nueva por navegación y abandona la anterior en el store, filtrando dos ViewModels por cada ida y vuelta. Corregido con un `recargar()` en `PartidaViewModel`, simétrico al `refrescar()` que `MenuViewModel` ya tenía por el mismo motivo.
+  - **Causa raíz del fallo de `gradlew test` en Claude Code, por fin identificada:** `GRADLE_USER_HOME` está **vacío** en sus shells. Sin la variable, Gradle cae en su ruta por defecto dentro del perfil de usuario con tilde y rompe el classpath del worker. Las variables de usuario se leen al arrancar el proceso, y Windows Terminal llevaba abierto desde antes de definirla, así que todas sus pestañas heredaban el entorno viejo por mucho que se reiniciara Claude Code dentro. Solución: cerrar Windows Terminal por completo y volver a abrirlo.
+  - Falsa alarma: el menú no ofrecía "Continuar" tras salir de la app. Comportamiento correcto: se guarda después de cada acción exitosa, y una partida en la que no se lanzó ni se anotó no tiene nada que continuar.
+
+- **Estado:** MVP de la Fase A completo. Menú, partida entera, puntaje final con bonus, persistencia y háptica. `:core` con 78 tests, `:app-mobile` con tests JVM e instrumentados.
+
+- **Siguiente paso:** cerrar las decisiones 10 (nombre del juego, que arrastra el `applicationId` de la decisión 28), 9 (diferenciador) y 11 (identidad visual). No son código: son las que le dan carácter propio a la app.
